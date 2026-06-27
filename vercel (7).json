@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/form-qualificacao-agendamento__11_.html" }
+  ]
+}
