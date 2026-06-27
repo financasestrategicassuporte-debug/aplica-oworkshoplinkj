@@ -613,29 +613,41 @@ body{
 .section-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:22px;margin-bottom:14px}
 .section-title{font-size:18px;font-weight:700;margin-bottom:4px}
 .section-sub{font-size:13.5px;color:#8d968d;margin-bottom:18px}
-.cal-nav-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.cal-title{font-size:14px;font-weight:700;color:#c7d0c8}
-.cal-arrow{width:32px;height:32px;border:1.5px solid rgba(255,255,255,.1);border-radius:8px;background:rgba(255,255,255,.04);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;color:#8d968d;transition:all .15s}
-.cal-arrow:hover{border-color:rgba(52,211,153,.3);color:#34d399}
-.cal-arrow:disabled{opacity:.3;cursor:not-allowed}
-.days-grid{display:grid;grid-template-columns:repeat(var(--cols,5),1fr);gap:8px;margin-bottom:16px}
-.day-col{display:flex;flex-direction:column;gap:5px}
-.day-hdr{text-align:center;padding:8px 4px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
-.day-hdr.today{background:rgba(52,211,153,.06);border-color:rgba(52,211,153,.2)}
+.cal-nav-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:10px 14px}
+.cal-title{font-size:15px;font-weight:700;color:#c7d0c8;letter-spacing:.2px}
+.cal-arrow{width:38px;height:38px;border:1.5px solid rgba(255,255,255,.12);border-radius:10px;background:rgba(255,255,255,.06);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;color:#c7d0c8;transition:all .15s;font-weight:700}
+.cal-arrow:hover{border-color:rgba(52,211,153,.5);color:#34d399;background:rgba(52,211,153,.08)}
+.cal-arrow:disabled{opacity:.25;cursor:not-allowed}
+.days-grid{display:grid;grid-template-columns:repeat(var(--cols,5),1fr);gap:0;margin-bottom:16px;border:1px solid rgba(255,255,255,.09);border-radius:14px;overflow:hidden}
+.day-col{display:flex;flex-direction:column;border-right:1px solid rgba(255,255,255,.07)}
+.day-col:last-child{border-right:none}
+.day-hdr{text-align:center;padding:14px 6px;background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.09);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.day-hdr.today{background:rgba(52,211,153,.08);border-bottom-color:rgba(52,211,153,.25)}
 .day-hdr.today .day-num{color:#34d399}
-.day-name{font-size:10px;font-weight:700;color:#4a5450;text-transform:uppercase}
-.day-num{font-size:18px;font-weight:800;color:#c7d0c8;line-height:1.2}
+.day-hdr-destaque{background:rgba(52,211,153,.1) !important;border-bottom:2px solid rgba(52,211,153,.4) !important}
+.day-hdr-destaque .day-num{color:#34d399 !important}
+.day-hdr-lotado{background:rgba(255,60,60,.04) !important;border-bottom:1px solid rgba(255,60,60,.15) !important}
+.day-hdr-lotado .day-num{color:#6b7280 !important}
+.day-badge-melhor{font-size:9px;font-weight:800;color:#34d399;background:rgba(52,211,153,.15);border:1px solid rgba(52,211,153,.3);border-radius:999px;padding:2px 7px;margin-top:3px;letter-spacing:.3px;white-space:nowrap}
+.day-badge-lotado{font-size:9px;font-weight:800;color:#ef4444;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:999px;padding:2px 7px;margin-top:3px;letter-spacing:.3px;white-space:nowrap}
+.day-name{font-size:10px;font-weight:700;color:#6b7580;text-transform:uppercase;letter-spacing:.5px}
+.day-num{font-size:20px;font-weight:800;color:#c7d0c8;line-height:1.1}
 .day-month{font-size:9px;color:#4a5450}
-.slot{padding:7px 4px;border-radius:8px;border:1.5px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);font-size:12px;font-weight:600;color:#6b7280;cursor:pointer;text-align:center;transition:all .15s}
-.slot:hover:not(.taken):not(.past){border-color:rgba(52,211,153,.35);color:#34d399;background:rgba(52,211,153,.06)}
-.slot.selected{background:linear-gradient(135deg,#34d399,#10b981);border-color:#34d399;color:#06120c;box-shadow:0 4px 12px -4px rgba(52,211,153,.5)}
+.slots-col{display:flex;flex-direction:column;padding:10px 8px;gap:6px;align-items:stretch}
+.slot-reservado{padding:8px 4px;border-radius:8px;border:1px dashed rgba(255,255,255,.07);background:rgba(255,255,255,.015);font-size:12px;font-weight:600;color:#2d3832;cursor:not-allowed;text-align:center;width:100%;position:relative}
+.slot-reservado::after{content:'Reservado';font-size:8px;display:block;color:#2d3832;margin-top:1px}
+.slot-destaque{border-color:rgba(52,211,153,.3) !important;color:#34d399 !important;background:rgba(52,211,153,.05) !important}
+.slot{padding:8px 4px;border-radius:8px;border:1.5px solid rgba(255,255,255,.09);background:rgba(255,255,255,.03);font-size:12px;font-weight:700;color:#8d968d;cursor:pointer;text-align:center;transition:all .15s;width:100%}
+.slot:hover:not(.taken):not(.past){border-color:rgba(52,211,153,.45);color:#34d399;background:rgba(52,211,153,.08)}
+.slot.selected{background:linear-gradient(135deg,#34d399,#10b981);border-color:#34d399;color:#06120c;box-shadow:0 4px 14px -4px rgba(52,211,153,.55)}
 .slot.taken{background:rgba(255,255,255,.02);color:#2a3330;cursor:not-allowed;border-color:rgba(255,255,255,.04)}
 .slot.past{background:rgba(255,255,255,.01);color:#1e2b25;cursor:not-allowed;border-color:rgba(255,255,255,.03)}
-.slot-preview{display:none;align-items:center;gap:12px;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.2);border-radius:12px;padding:12px 16px;margin-top:12px}
+.slot-divider{font-size:9px;color:#3a4440;text-align:center;padding:3px 0;margin:2px 0;border-top:1px solid rgba(255,255,255,.06)}
+.slot-preview{display:none;align-items:center;gap:14px;background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.25);border-radius:14px;padding:14px 18px;margin-top:14px}
 .slot-preview.show{display:flex}
-.slot-preview-main{font-size:14px;font-weight:700;color:#6ee7b7}
-.slot-preview-sub{font-size:12px;color:#34d399;margin-top:1px}
-.slot-change{font-size:11px;color:#4a5450;text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;margin-top:2px}
+.slot-preview-main{font-size:15px;font-weight:700;color:#6ee7b7}
+.slot-preview-sub{font-size:12px;color:#34d399;margin-top:2px}
+.slot-change{font-size:11px;color:#4a5450;text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;margin-top:4px}
 .day-hint{display:none;font-size:12px;font-weight:700;color:#34d399;background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);border-radius:8px;padding:7px 14px;margin-bottom:14px;text-align:center}
 
 /* ══════════════════════════════════════════════
@@ -793,8 +805,8 @@ body{
           <div class="pf-grid">
             <div>
               <label class="pf-label">Telefone (WhatsApp) *</label>
-              <input class="pf-input" id="i-wa" placeholder="(00) 00000-0000" inputmode="tel"/>
-              <div class="pf-err-msg" id="e-wa">Informe um telefone válido.</div>
+              <input class="pf-input" id="i-whatsapp" placeholder="(00) 00000-0000" inputmode="tel"/>
+              <div class="pf-err-msg" id="e-whatsapp">Informe um telefone válido.</div>
             </div>
             <div>
               <label class="pf-label">E-mail *</label>
@@ -887,15 +899,15 @@ body{
 
     <!-- PROGRESS -->
     <div class="qprog">
-      <div class="qprog-row"><span id="qprog-lbl">Qualificação</span><b id="qprog-pct">0%</b></div>
+      <div class="qprog-row"><span id="qprog-lbl">Progresso, está quase finalizando</span><b id="qprog-pct">0%</b></div>
       <div class="qprog-bar"><div class="qprog-fill" id="qprog-fill" style="width:0%"></div></div>
     </div>
 
     <!-- Q1: NEGÓCIO -->
     <div class="qual-screen active" id="q1">
-      <div class="q-badge"><span class="q-badge-dot"></span>PASSO 1.1 — QUALIFICAÇÃO</div>
+      <div class="q-badge"><span class="q-badge-dot"></span>PASSO 1.1</div>
       <div class="q-title">Me fala do seu negócio</div>
-      <div class="q-sub">Parte 1 das perguntas de qualificação</div>
+
       <div class="script-box">
         <div class="script-lbl">FALE ISSO</div>
         <p>Me fala um pouco do seu negócio.</p>
@@ -910,9 +922,9 @@ body{
 
     <!-- Q2: MARGEM -->
     <div class="qual-screen" id="q2">
-      <div class="q-badge"><span class="q-badge-dot"></span>PASSO 1.2 — BANT · BUDGET</div>
+      <div class="q-badge"><span class="q-badge-dot"></span>PASSO 1.2</div>
       <div class="q-title">Margem de lucro</div>
-      <div class="q-sub">B de BANT — Capacidade financeira de investimento</div>
+
       <div class="script-box">
         <div class="script-lbl">FALE ISSO</div>
         <p>Qual tem sido sua margem de lucro?</p>
@@ -933,7 +945,7 @@ body{
 
     <!-- Q3: SITUAÇÃO FINANCEIRA (condicional) -->
     <div class="qual-screen" id="q3">
-      <div class="q-badge"><span class="q-badge-dot"></span>PASSO 1.3 — BANT · BUDGET</div>
+      <div class="q-badge"><span class="q-badge-dot"></span>PASSO 1.3</div>
       <div class="q-title">Situação financeira</div>
       <div class="q-sub">Verificar saúde do fluxo de caixa</div>
       <div class="script-box">
@@ -959,7 +971,7 @@ body{
       <div class="cond-block" id="bloco-reserva">
         <div class="script-box">
           <div class="script-lbl">SE FLUXO NEGATIVO — FALE ISSO</div>
-          <p>Isso é preocupante. <strong>Quanto você tem no seu fundo de reserva?</strong><br><br>(Se não tiver:) Você tem consciência de que está a 1 a 2 meses ruins da falência, certo?</p>
+          <p>Você tem fundo reserva na sua academia?</p>
         </div>
         <div class="note-lbl">TEM FUNDO DE RESERVA?</div>
         <div class="opts-2col" style="margin-top:8px">
@@ -975,7 +987,7 @@ body{
 
     <!-- Q4: DESAFIO -->
     <div class="qual-screen" id="q4">
-      <div class="q-badge"><span class="q-badge-dot"></span>PASSO 1.4 — QUALIFICAÇÃO</div>
+      <div class="q-badge"><span class="q-badge-dot"></span>PASSO 1.4</div>
       <div class="q-title">Maior desafio</div>
       <div class="q-sub">Entender o principal obstáculo para crescimento</div>
       <div class="script-box">
@@ -998,12 +1010,12 @@ body{
 
     <!-- Q5: DOR OCULTA -->
     <div class="qual-screen" id="q5">
-      <div class="q-badge"><span class="q-badge-dot"></span>PASSO 1.5 — QUALIFICAÇÃO</div>
+      <div class="q-badge"><span class="q-badge-dot"></span>PASSO 1.5</div>
       <div class="q-title">Dor Oculta</div>
       <div class="q-sub">O verdadeiro "porquê"</div>
       <div class="script-box">
         <div class="script-lbl">FALE ISSO</div>
-        <p>Me explica porque realmente que você quer sair da sua situação atual e quer <strong>crescer a sua empresa</strong>?</p>
+        <p>Me explica porque realmente que você quer sair da sua situação atual e quer <strong>crescer a sua empresa</strong>? O que te motiva?</p>
       </div>
       <div class="note-lbl">ANOTE — DOR OCULTA / MOTIVO REAL</div>
       <textarea class="q-textarea" id="q5-dor" rows="4" placeholder="Ex: Quer provar para a família que conseguiu, quer viajar mais com os filhos, está acumulado de dívidas..."></textarea>
@@ -1015,12 +1027,12 @@ body{
 
     <!-- Q6: DECISORES -->
     <div class="qual-screen" id="q6">
-      <div class="q-badge"><span class="q-badge-dot"></span>PASSO 1.6 — BANT · AUTHORITY</div>
+      <div class="q-badge"><span class="q-badge-dot"></span>PASSO 1.6</div>
       <div class="q-title">Identificar Decisores</div>
-      <div class="q-sub">A de BANT — Autoridade de decisão</div>
+
       <div class="script-box">
         <div class="script-lbl">FALE ISSO</div>
-        <p>Deixa eu te perguntar: caso no final dessa <strong>1 hora de consultoria gratuita</strong> nós apresentássemos uma solução — e não quer dizer que vamos, pois não é o foco inicial — você é a pessoa que pode <strong>tomar a decisão</strong> de entrar ou não no programa, ou você precisa consultar alguém para tomar essa decisão? Um sócio, esposa, o financeiro ou alguma outra pessoa...</p>
+        <p>Deixa eu te perguntar: caso no final dessa <strong>1 hora de consultoria gratuita</strong> nós apresentássemos uma solução — <strong><em>e não quer dizer que vamos, pois não é o foco inicial</em></strong> — você é a pessoa que pode <strong>tomar a decisão</strong> de entrar ou não no programa, ou você precisa consultar alguém para tomar essa decisão? Um sócio, esposa, o financeiro ou alguma outra pessoa...</p>
       </div>
       <div class="info-box">🚨 Nosso time só realiza <strong>uma única reunião</strong>. É fundamental que TODOS os decisores estejam presentes. Se vier sozinho e precisar "consultar o sócio depois", a reunião será perdida. Não agende sem confirmar isso.</div>
       <div class="note-lbl">SITUAÇÃO DO DECISOR</div>
@@ -1042,14 +1054,14 @@ body{
       <div class="cond-block" id="bloco-consultar">
         <div class="script-box">
           <div class="script-lbl">SE PRECISA CONSULTAR — FALE ISSO</div>
-          <p>Então é muito importante que essa pessoa esteja na nossa reunião, tudo bem? Vou mandar alguns horários para vocês ajustarem e já marcamos para todos participarem juntos da reunião.</p>
+          <p>🚨 É de extrema importância garantir o comparecimento do seu sócio para que a reunião ocorra.</p>
         </div>
         <div class="note-lbl">O OUTRO DECISOR CONFIRMOU PRESENÇA?</div>
         <div class="opts-2col" style="margin-top:8px">
           <button class="opt-btn opt-2col" data-q="decisor_confirmou" data-v="confirmou" onclick="selDecisorConf(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">Confirmou que virá</span><span class="check">✓</span></button>
-          <button class="opt-btn opt-2col warn-opt" data-q="decisor_confirmou" data-v="nao_confirmou" onclick="selDecisorConf(this)"><span style="font-size:22px">⚠️</span><span style="font-size:13px;font-weight:600">Não confirmou / "Vejo depois"</span><span class="check">✓</span></button>
+          <button class="opt-btn opt-2col warn-opt" data-q="decisor_confirmou" data-v="nao_confirmou" onclick="selDecisorConf(this)"><span style="font-size:22px">⚠️</span><span style="font-size:13px;font-weight:600">Não confirmou, mas gostaria de pré agendar e alinhar com ele para não perder a vaga.</span><span class="check">✓</span></button>
         </div>
-        <div class="danger-box" id="aviso-decisor" style="display:none">🚨 <strong>NÃO AGENDAR sem confirmar o segundo decisor.</strong> Uma reunião sem todos os decisores é uma reunião perdida. Insista ou marque para quando puderem vir juntos.</div>
+        <div class="danger-box" id="aviso-decisor" style="display:none">🚨 É de extrema importância garantir o comparecimento do seu sócio para que a reunião ocorra.</div>
       </div>
       <div class="q-nav">
         <button class="btn-back" onclick="goQ(5)">← Voltar</button>
@@ -1059,14 +1071,14 @@ body{
 
     <!-- Q7: URGÊNCIA -->
     <div class="qual-screen" id="q7">
-      <div class="q-badge"><span class="q-badge-dot"></span>PASSO 1.7 — BANT · TIMELINE</div>
+      <div class="q-badge"><span class="q-badge-dot"></span>PASSO 1.7</div>
       <div class="q-title">Qual é a sua Urgência?</div>
-      <div class="q-sub">T de BANT — Prazo de decisão</div>
+
       <div class="script-box">
         <div class="script-lbl">FALE ISSO</div>
         <p>Deixa eu te fazer uma última pergunta antes de fecharmos. <strong>Qual é a sua urgência em resolver esse desafio que você me descreveu?</strong><br><br>Você quer resolver isso <strong>agora com urgência</strong>, está pensando em agir <strong>nos próximos 6 meses</strong>, ou isso é algo para <strong>daqui a 1 ano ou mais</strong>?</p>
       </div>
-      <div class="warn-box">⚠️ Essa pergunta é obrigatória. Leads sem urgência declarada têm altíssima taxa de no-show. Quem responde "1 ano ou mais" raramente fecha. Se a prioridade for baixa, qualifique como Não Agendar ou Cautela máxima.</div>
+
       <div class="note-lbl">URGÊNCIA DECLARADA PELO LEAD</div>
       <div class="opts" style="margin-top:8px">
         <button class="opt-btn" data-q="urgencia" data-v="agora" onclick="selQ(this)"><span class="opt-icon">🔥</span>Urgente — agora<span class="check">✓</span></button>
@@ -1155,7 +1167,7 @@ body{
     <div class="section-card" style="text-align:center;padding:36px 24px">
       <div class="success-icon">🎉</div>
       <h2 style="font-size:22px;font-weight:800;margin-bottom:8px">Agendamento confirmado!</h2>
-      <p style="font-size:14px;color:#8d968d;line-height:1.65;margin-bottom:20px">Em instantes você receberá a confirmação no WhatsApp com o link do Google Meet.</p>
+      <p style="font-size:14px;color:#8d968d;line-height:1.65;margin-bottom:20px">Sua reunião está agendada, um pouco antes da data e horário da reunião nosso time entrará em contato.</p>
       <div style="background:rgba(52,211,153,.06);border:1px solid rgba(52,211,153,.15);border-radius:14px;padding:18px;margin-bottom:16px">
         <div style="font-size:10px;color:#4a5450;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Detalhes do agendamento</div>
         <div id="success-details" style="font-size:14px;font-weight:600;color:#6ee7b7;line-height:2.1"></div>
@@ -1421,6 +1433,13 @@ function goQual() {
   if (eEmail && (!email || !email.includes('@'))) { eEmail.style.display = 'block'; ok = false; }
   else if (eEmail) { eEmail.style.display = 'none'; }
 
+  // academia
+  const academiaEl = document.getElementById('i-academia');
+  const eAcademia = document.getElementById('e-academia');
+  if (academiaEl && eAcademia) {
+    if (!academiaEl.value.trim()) { eAcademia.style.display = 'block'; ok = false; } else { eAcademia.style.display = 'none'; }
+  }
+
   // cidade
   const cidadeEl = document.getElementById('i-cidade');
   const eCidade = document.getElementById('e-cidade');
@@ -1461,6 +1480,7 @@ function goQual() {
   leadData.nome       = nome;
   leadData.whatsapp   = wa;
   leadData.email      = email;
+  leadData.academia   = academiaEl ? academiaEl.value.trim() : '';
   leadData.cidade     = cidadeEl ? cidadeEl.value.trim() : '';
   leadData.alunos     = alunos;
   leadData.faturamento = fat;
@@ -1689,61 +1709,121 @@ function getDiasDisponiveis() {
 }
 
 function renderWeek() {
-  const grid   = document.getElementById('days-grid');
-  const range  = document.getElementById('cal-range');
+  const grid    = document.getElementById('days-grid');
+  const range   = document.getElementById('cal-range');
   const btnPrev = document.getElementById('btn-prev');
   const btnNext = document.getElementById('btn-next');
   if (!grid) return;
 
   const hoje = new Date();
   hoje.setHours(0,0,0,0);
-  const diasDisp = getDiasDisponiveis();
-  const janela   = CONFIG.janela_dias || 14;
-  const colunas  = CONFIG.colunas || 5;
 
-  // Montar lista de dias válidos a partir de amanhã
-  const diasValidos = [];
-  for (let d = 1; d <= janela + 30; d++) {
-    const dt = new Date(hoje);
-    dt.setDate(hoje.getDate() + d);
-    if (diasDisp.includes(dt.getDay())) diasValidos.push(dt);
-    if (diasValidos.length >= janela) break;
+  // Encontrar a próxima terça (dia do workshop)
+  function proximaTerca(base) {
+    const d = new Date(base);
+    const diff = (2 - d.getDay() + 7) % 7 || 7; // próxima terça
+    d.setDate(d.getDate() + diff);
+    return d;
   }
 
-  const start = weekOffset * colunas;
-  const slice = diasValidos.slice(start, start + colunas);
+  const terca = proximaTerca(hoje);
 
-  if (btnPrev) btnPrev.disabled = weekOffset <= 0;
-  if (btnNext) btnNext.disabled = start + colunas >= diasValidos.length;
+  // Janela: terça + quarta + quinta + sexta + segunda seguinte = 5 dias
+  const diasMostrar = [];
+  const offsetDias = [0, 1, 2, 3, 6]; // ter, qua, qui, sex, seg
+  offsetDias.forEach(off => {
+    const d = new Date(terca);
+    d.setDate(terca.getDate() + off);
+    diasMostrar.push(d);
+  });
 
-  if (slice.length > 0 && range) {
+  // Slots reservados (gatilho mental): todos os slots de segunda e parte dos outros dias
+  function isReservado(dt, h) {
+    const dow = dt.getDay(); // 1=seg,2=ter,3=qua,4=qui,5=sex
+    const hora = parseInt(h);
+    if (dow === 1 && hora < 12) return true; // segunda: apenas manhã reservada
+    if (dow === 3 && hora < 12) return true; // quarta: apenas manhã reservada
+    return false;
+  }
+
+  if (btnPrev) btnPrev.style.display = 'none'; // sem navegação — janela fixa
+  if (btnNext) btnNext.style.display = 'none';
+
+  if (range) {
     const fmt = d => d.toLocaleDateString('pt-BR', {day:'2-digit', month:'short'});
-    range.textContent = fmt(slice[0]) + ' – ' + fmt(slice[slice.length-1]);
+    range.textContent = fmt(diasMostrar[0]) + ' – ' + fmt(diasMostrar[diasMostrar.length-1]);
   }
 
   grid.innerHTML = '';
 
-  // Cabeçalho dias
-  slice.forEach(dt => {
+  diasMostrar.forEach(dt => {
     const col = document.createElement('div');
     col.className = 'day-col';
-    const nomeDia  = dt.toLocaleDateString('pt-BR', {weekday:'short'}).replace('.','');
-    const numDia   = dt.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
-    col.innerHTML = '<div class="day-head"><div class="day-name">' + nomeDia + '</div><div class="day-num">' + numDia + '</div></div>';
 
-    const slots = document.createElement('div');
-    slots.className = 'slots-col';
-    ;(CONFIG.horarios || ['09:00','10:00','14:00','15:00','16:00']).forEach(h => {
+    const dow = dt.getDay();
+    const isTerca = dow === 2;
+    const isSeg   = dow === 1;
+
+    const nomeDia = dt.toLocaleDateString('pt-BR', {weekday:'short'}).replace('.','').toUpperCase();
+    const numDia  = dt.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
+
+    // Cabeçalho
+    const hdr = document.createElement('div');
+    hdr.className = 'day-hdr' + (isTerca ? ' day-hdr-destaque' : '') + (isSeg ? ' day-hdr-lotado' : '');
+
+    if (isTerca) {
+      hdr.innerHTML =
+        '<div class="day-name">' + nomeDia + '</div>' +
+        '<div class="day-num">' + numDia + '</div>' +
+        '<div class="day-badge-melhor">⭐ Melhor dia</div>';
+    } else if (isSeg) {
+      hdr.innerHTML =
+        '<div class="day-name">' + nomeDia + '</div>' +
+        '<div class="day-num">' + numDia + '</div>' +
+        '<div class="day-badge-lotado">🔴 Agenda cheia</div>';
+    } else {
+      hdr.innerHTML =
+        '<div class="day-name">' + nomeDia + '</div>' +
+        '<div class="day-num">' + numDia + '</div>';
+    }
+    col.appendChild(hdr);
+
+    // Slots
+    const slotsWrap = document.createElement('div');
+    slotsWrap.className = 'slots-col';
+    let lastPeriod = null;
+
+    ;(CONFIG.horarios || ['09:00','10:00','11:00','14:00','15:00','16:00']).forEach(h => {
+      const hora = parseInt(h.split(':')[0]);
+      const period = hora < 12 ? 'manha' : 'tarde';
+
+      if (period !== lastPeriod && lastPeriod !== null) {
+        const div = document.createElement('div');
+        div.className = 'slot-divider';
+        slotsWrap.appendChild(div);
+      }
+      lastPeriod = period;
+
       const iso   = dt.toISOString().slice(0,10) + 'T' + h + ':00';
       const label = dt.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'}) + ' às ' + h;
       const btn   = document.createElement('button');
-      btn.className = 'slot-btn' + (slotSel && slotSel.iso === iso ? ' selected' : '');
-      btn.textContent = h;
-      btn.onclick = () => selectSlot(iso, label, btn);
-      slots.appendChild(btn);
+      const reservado = isReservado(dt, h);
+
+      if (reservado) {
+        btn.className = 'slot slot-reservado';
+        btn.textContent = h;
+        btn.disabled = true;
+        btn.title = 'Reservado';
+      } else {
+        btn.className = 'slot' + (slotSel && slotSel.iso === iso ? ' selected' : '') + (isTerca ? ' slot-destaque' : '');
+        btn.textContent = h;
+        btn.onclick = () => selectSlot(iso, label, btn);
+      }
+
+      slotsWrap.appendChild(btn);
     });
 
-    col.appendChild(slots);
+    col.appendChild(slotsWrap);
     grid.appendChild(col);
   });
 }
@@ -1755,7 +1835,7 @@ function shiftWeek(dir) {
 
 function selectSlot(iso, label, btn) {
   slotSel = { iso, label };
-  document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.slot').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 
   const preview     = document.getElementById('slot-preview');
@@ -1769,7 +1849,7 @@ function selectSlot(iso, label, btn) {
 
 function clearSlot() {
   slotSel = null;
-  document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.slot').forEach(b => b.classList.remove('selected'));
   const preview = document.getElementById('slot-preview');
   if (preview) preview.style.display = 'none';
   const btnNext = document.getElementById('btn-cal-next');
@@ -1801,7 +1881,6 @@ function renderConfirm() {
     ['📧 E-mail',     leadData.email],
     ['🏙️ Cidade',     leadData.cidade],
     ['📅 Horário',    slotSel ? slotSel.label : '—'],
-    ['🏷️ Indicação',  recom],
   ].filter(([,v]) => v);
 
   rows.innerHTML = itens.map(([k,v]) =>
@@ -1834,8 +1913,7 @@ async function confirmar() {
   if (det) {
     det.innerHTML =
       '📅 ' + (slotSel ? slotSel.label : '—') + '<br>' +
-      '👤 ' + (leadData.nome || '') + '<br>' +
-      '🏷️ ' + ((leadData.result || {}).rec || '—');
+      '👤 ' + (leadData.nome || '');
   }
 
   // Google Calendar link
