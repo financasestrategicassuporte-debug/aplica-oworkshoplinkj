@@ -6,6 +6,8 @@
 <title>Agende sua Consultoria — Gestão Fitness Brasil</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 /* cyrillic-ext */
 @font-face {
@@ -1104,17 +1106,19 @@ body{
       <div class="section-title">📅 Escolha o melhor horário</div>
       <div class="section-sub" id="cal-sub">Selecione o dia e horário para sua consultoria de 1 hora</div>
       <div class="day-hint" id="cal-day-hint"></div>
+      <div class="cal-resp-row" id="cal-resp-row" style="display:flex;gap:8px;align-items:center;margin-bottom:14px;font-size:12px;color:#8d968d;flex-wrap:wrap"></div>
       <div class="cal-nav-row">
         <button class="cal-arrow" id="btn-prev" onclick="shiftWeek(-1)" disabled>‹</button>
         <span class="cal-title" id="cal-range"></span>
         <button class="cal-arrow" id="btn-next" onclick="shiftWeek(1)">›</button>
       </div>
       <div class="days-grid" id="days-grid"></div>
+      <div class="cal-loading" id="cal-loading" style="display:none;text-align:center;padding:20px;color:#8d968d;font-size:13px">⏳ Carregando disponibilidade das agendas...</div>
       <div class="slot-preview" id="slot-preview">
         <span style="font-size:24px">✅</span>
         <div>
           <div class="slot-preview-main" id="slot-preview-main">—</div>
-          <div class="slot-preview-sub">Reunião de 1 hora · Google Meet</div>
+          <div class="slot-preview-sub" id="slot-preview-sub">Reunião de 1 hora · Google Meet</div>
           <button class="slot-change" onclick="clearSlot()">Trocar horário</button>
         </div>
       </div>
@@ -1196,22 +1200,240 @@ body{
    ⚙️  CONFIGURAÇÃO
 ══════════════════════════════════════════════════ */
 const CONFIG = {
+  // ── RD Station CRM ──
   rd_token:                "COLE_SEU_TOKEN_RD_STATION",
   rd_pipeline_id:          "COLE_O_ID_DO_PIPELINE_WEBINARIO_QUENTE",
   rd_stage_qualificado:    "COLE_ID_ESTAGIO_REUNIAO_AGENDADA",
   rd_stage_treino:         "COLE_ID_ESTAGIO_PARA_QUALIFICAR",
   rd_stage_desqualificado: "COLE_ID_ESTAGIO_NAO_QUALIFICADO",
-  webhook_url:             "COLE_URL_DO_WEBHOOK_N8N",
-  supabase_url:            "",
-  supabase_key:            "",
-  supabase_table:          "agendamentos_webinario",
+
+  // ── Supabase (todos os leads, qualificados ou não) ──
+  // Crie um projeto em supabase.com (free tier serve), copie a URL e a anon key
+  // e crie a tabela "leads_webinario" — o SQL fica em SETUP-SUPABASE.sql no fim deste arquivo (comentário).
+  supabase_url:            "COLE_SUA_SUPABASE_URL",      // ex: https://xxxx.supabase.co
+  supabase_anon_key:       "COLE_SUA_SUPABASE_ANON_KEY",
+  supabase_table:          "leads_webinario",
+
+  // ── Google Calendar (Marcelo, Eduardo, Yves) ──
+  // 1. Vá em https://console.cloud.google.com/ → crie um projeto
+  // 2. Ative a "Google Calendar API"
+  // 3. Em "Credenciais" crie um "ID do cliente OAuth" tipo "Aplicativo da Web"
+  // 4. Adicione o domínio onde esse form vai rodar em "Origens JavaScript autorizadas"
+  //    (ex: https://seusite.com.br ou http://localhost:5500 pra testar)
+  // 5. Cole o Client ID abaixo. Não precisa de Client Secret (fluxo é 100% client-side).
+  google_client_id:        "COLE_SEU_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
+
+  // E-mails das agendas do Google Calendar de cada closer.
+  // Cada pessoa precisa compartilhar a agenda com "Ver todos os detalhes do evento"
+  // para as outras contas que forem logar aqui (ou usar uma conta de serviço — ver nota no fim).
+  calendars: {
+    marcelo:  "marcelo@gestaofitnessbrasil.com.br",
+    eduardo:  "eduardo@gestaofitnessbrasil.com.br",
+    yves:     "yves@gestaofitnessbrasil.com.br",
+  },
+
   especialista:            "Especialista GFB",
   duracao_min:             60,
+  // dias da semana com reunião (1=seg ... 5=sex). Quarta-feira (3) fica de fora
+  // do período da manhã via BLOQUEIO_QUARTA_MANHA abaixo — toda quarta de manhã é bloqueada para todo mundo.
   dias_disponiveis:        [1,2,3,4,5],
   horarios:                ["09:00","10:00","11:00","14:00","15:00","16:00"],
   janela_dias:             10,
   colunas:                 5,
+
+  // ── Regra fixa: quarta de manhã sempre bloqueada para os 3 (Marcelo, Eduardo, Yves) ──
+  bloqueio_quarta_manha:   true,
+
+  // ── Regra de roteamento: "Eduardo atolado" ──
+  // Eduardo é considerado atolado se tiver >= este nº de reuniões marcadas
+  // em QUALQUER um dos próximos N dias úteis (ver dias_verificar_atolado).
+  atolado_min_reunioes:    3,
+  dias_verificar_atolado:  2,
 };
+
+/* ══════════════════════════════════════════════════
+   ROTEAMENTO DE RESPONSÁVEL (Marcelo / Eduardo / Yves)
+   ─────────────────────────────────────────────────
+   Regra do Marcelo:
+   • PAV / Black Belt / Acelerador com viés de "produto PAV" → especialista é o EDUARDO
+     (ele é o especialista do PAV). Se a agenda do Eduardo estiver "atolada" nos
+     próximos N dias úteis, a reunião cai para o MARCELO (pra não esfriar o lead).
+   • Demais reuniões (recomendação ACELERADOR puro, reunião de treino, etc.) → YVES.
+   • Se o volume de PAV estiver alto e a agenda do Yves tiver muito espaço enquanto
+     a do Eduardo/Marcelo está cheia, o sistema também pode oferecer Yves como
+     alternativa para "outras reuniões" — isso já é o comportamento padrão acima.
+══════════════════════════════════════════════════ */
+let agendaCache = { marcelo: null, eduardo: null, yves: null, fetchedAt: null };
+
+function decidirResponsavel(result) {
+  // result vem de calcResults() — result.rec é "PAV", "BLACK BELT", "ACELERADOR" ou treino/desq.
+  const rec = (result && result.rec) || '';
+  const isPAVorBB = rec === 'PAV' || rec === 'BLACK BELT';
+
+  if (!isPAVorBB) {
+    return { pessoa: 'yves', motivo: 'Reunião padrão (não-PAV) — fica com o Yves.' };
+  }
+
+  // É PAV/BB → por padrão vai para o Eduardo (especialista)
+  const eduardoAtolado = checarAtolado('eduardo');
+  if (eduardoAtolado) {
+    return { pessoa: 'marcelo', motivo: 'Eduardo atolado nos próximos ' + CONFIG.dias_verificar_atolado + ' dias — Marcelo assume para não esfriar o lead.' };
+  }
+  return { pessoa: 'eduardo', motivo: 'PAV/Black Belt — especialista Eduardo com agenda livre.' };
+}
+
+function checarAtolado(pessoa) {
+  const cal = agendaCache[pessoa];
+  if (!cal || !cal.eventosPorDia) return false; // sem dados ainda → assume livre (não bloqueia o fluxo)
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  let diasUteisChecados = 0;
+  for (let i = 1; diasUteisChecados < CONFIG.dias_verificar_atolado && i <= 10; i++) {
+    const d = new Date(hoje); d.setDate(hoje.getDate() + i);
+    if (d.getDay() === 0 || d.getDay() === 6) continue; // pula fim de semana
+    diasUteisChecados++;
+    const key = d.toISOString().slice(0,10);
+    const n = cal.eventosPorDia[key] || 0;
+    if (n >= CONFIG.atolado_min_reunioes) return true;
+  }
+  return false;
+}
+
+/* ══════════════════════════════════════════════════
+   GOOGLE CALENDAR — LOGIN + LEITURA + CRIAÇÃO DE EVENTO
+   ─────────────────────────────────────────────────
+   Fluxo: usamos o Google Identity Services (GIS) para pedir um token de
+   acesso OAuth (escopo calendar) da conta de quem estiver logado no
+   navegador que abrir este form (em geral: o time interno, no laptop,
+   antes de mandar o link de horários pro lead — ou o próprio lead loga
+   com a conta dele só pra LEITURA pública de disponibilidade, se você
+   preferir simplificar trocando para "calendar.readonly" + conta de serviço).
+
+   IMPORTANTE: pra funcionar sem o lead precisar logar no Google, o jeito
+   mais simples é VOCÊ (Marcelo) abrir este form uma vez por dia / sessão
+   e clicar em "Conectar Google Calendar" — o token fica válido por algumas
+   horas e o form consulta as 3 agendas (Marcelo, Eduardo, Yves) desde que
+   elas estejam compartilhadas com a sua conta com permissão de leitura.
+══════════════════════════════════════════════════ */
+let gcalToken = null;
+let gcalTokenClient = null;
+
+function initGoogleAuth() {
+  if (!window.google || !google.accounts || !google.accounts.oauth2) {
+    setTimeout(initGoogleAuth, 300);
+    return;
+  }
+  gcalTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CONFIG.google_client_id,
+    scope: 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly',
+    callback: (resp) => {
+      if (resp && resp.access_token) {
+        gcalToken = resp.access_token;
+        carregarAgendasReais();
+      }
+    },
+  });
+}
+
+function conectarGoogleCalendar() {
+  if (!gcalTokenClient) { initGoogleAuth(); setTimeout(conectarGoogleCalendar, 500); return; }
+  gcalTokenClient.requestAccessToken();
+}
+
+async function buscarEventos(emailAgenda, fromISO, toISO) {
+  const url = 'https://www.googleapis.com/calendar/v3/calendars/'
+    + encodeURIComponent(emailAgenda) + '/events'
+    + '?timeMin=' + encodeURIComponent(fromISO)
+    + '&timeMax=' + encodeURIComponent(toISO)
+    + '&singleEvents=true&orderBy=startTime';
+  const r = await fetch(url, { headers: { 'Authorization': 'Bearer ' + gcalToken } });
+  if (!r.ok) throw new Error('Google Calendar HTTP ' + r.status + ' (' + emailAgenda + ')');
+  return r.json();
+}
+
+async function carregarAgendasReais() {
+  if (!gcalToken) return;
+  const loadingEl = document.getElementById('cal-loading');
+  if (loadingEl) loadingEl.style.display = 'block';
+
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const fim  = new Date(hoje); fim.setDate(hoje.getDate() + CONFIG.janela_dias);
+  const fromISO = hoje.toISOString();
+  const toISO   = fim.toISOString();
+
+  for (const pessoa of Object.keys(CONFIG.calendars)) {
+    try {
+      const data = await buscarEventos(CONFIG.calendars[pessoa], fromISO, toISO);
+      const eventos = data.items || [];
+      const ocupados = new Set();      // 'YYYY-MM-DDTHH:00' bloqueados
+      const eventosPorDia = {};        // 'YYYY-MM-DD' -> contagem
+      eventos.forEach(ev => {
+        if (!ev.start || !ev.start.dateTime) return; // ignora eventos de dia inteiro
+        const dt = new Date(ev.start.dateTime);
+        const dayKey = dt.toISOString().slice(0,10);
+        eventosPorDia[dayKey] = (eventosPorDia[dayKey] || 0) + 1;
+        // marca a hora cheia (e a anterior, caso o evento ocupe mais de 1h) como ocupada
+        const dtEnd = ev.end && ev.end.dateTime ? new Date(ev.end.dateTime) : new Date(dt.getTime()+60*60*1000);
+        for (let t = new Date(dt); t < dtEnd; t.setHours(t.getHours()+1)) {
+          ocupados.add(t.toISOString().slice(0,13)); // YYYY-MM-DDTHH
+        }
+      });
+      agendaCache[pessoa] = { eventosPorDia, ocupados, ok: true };
+    } catch (e) {
+      console.warn('Erro ao carregar agenda de ' + pessoa + ':', e);
+      agendaCache[pessoa] = { eventosPorDia: {}, ocupados: new Set(), ok: false, erro: e.message };
+    }
+  }
+  agendaCache.fetchedAt = Date.now();
+  if (loadingEl) loadingEl.style.display = 'none';
+  if (document.getElementById('step3').classList.contains('active')) renderWeek();
+}
+
+function pessoaOcupada(pessoa, dt, hora) {
+  const cal = agendaCache[pessoa];
+  if (!cal || !cal.ok) return false; // sem conexão real ainda → não bloqueia (modo "agenda não carregada")
+  const d = new Date(dt);
+  const [hh] = hora.split(':');
+  d.setHours(parseInt(hh), 0, 0, 0);
+  const key = d.toISOString().slice(0,13);
+  return cal.ocupados.has(key);
+}
+
+/* Cria o evento na agenda do responsável + convida o lead */
+async function criarEventoGoogleCalendar(pessoa, slot) {
+  if (!gcalToken) return null;
+  const emailAgenda = CONFIG.calendars[pessoa];
+  if (!emailAgenda) return null;
+
+  const start = new Date(slot.iso);
+  const end   = new Date(start.getTime() + CONFIG.duracao_min*60*1000);
+
+  const body = {
+    summary: 'Consultoria GFB — ' + (leadData.nome || 'Lead'),
+    description: gerarRelatorioTexto(),
+    start: { dateTime: start.toISOString() },
+    end:   { dateTime: end.toISOString() },
+    attendees: leadData.email ? [{ email: leadData.email }] : [],
+    conferenceData: { createRequest: { requestId: 'gfb-' + Date.now() } },
+  };
+
+  try {
+    const r = await fetch(
+      'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(emailAgenda)
+      + '/events?conferenceDataVersion=1&sendUpdates=all',
+      {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + gcalToken, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }
+    );
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  } catch (e) {
+    console.warn('Erro ao criar evento no Google Calendar:', e);
+    return null;
+  }
+}
+
 
 /* ══════════════════════════════════════════════════
    SCORING — algoritmo GFB completo
@@ -1381,7 +1603,9 @@ function calcResults(qa) {
     rdStageId = CONFIG.rd_stage_qualificado;
   }
 
-  return {probs, rec, disqualified, training, baixaUrg, authorityFailed, bantOk, flxKey, comKey, uniKey, rdStageId};
+  const out = {probs, rec, disqualified, training, baixaUrg, authorityFailed, bantOk, flxKey, comKey, uniKey, rdStageId};
+  out.responsavel = decidirResponsavel(out);
+  return out;
 }
 
 /* ══════════════════════════════════════════════════
@@ -1546,6 +1770,11 @@ function selQ(el) {
 
 /* Q1 — textarea habilita next */
 document.addEventListener('DOMContentLoaded', function() {
+  // Prepara o cliente OAuth do Google Calendar antecipadamente (não pede login ainda)
+  if (CONFIG.google_client_id && CONFIG.google_client_id.indexOf('COLE_SEU') === -1) {
+    initGoogleAuth();
+  }
+
   const q1ta = document.getElementById('q1-negocio');
   if (q1ta) {
     q1ta.addEventListener('input', function() {
@@ -1701,7 +1930,39 @@ async function confirmarNQ() {
 function buildCalendar() {
   weekOffset = 0;
   slotSel    = null;
+  renderResponsavelInfo();
   renderWeek();
+  // Tenta usar token já existente; senão, pede conexão (1x por sessão)
+  if (CONFIG.google_client_id && CONFIG.google_client_id.indexOf('COLE_SEU') === -1) {
+    initGoogleAuth();
+    if (gcalToken) {
+      carregarAgendasReais();
+    } else {
+      renderConectarAgendaBtn();
+    }
+  }
+}
+
+function renderConectarAgendaBtn() {
+  const row = document.getElementById('cal-resp-row');
+  if (!row) return;
+  const btn = document.createElement('button');
+  btn.type = 'button';
+  btn.style.cssText = 'padding:6px 12px;border-radius:8px;border:1px solid #2f6;background:rgba(0,200,100,.08);color:#9be;font-size:12px;cursor:pointer';
+  btn.textContent = '🔗 Conectar Google Calendar (ver agenda real)';
+  btn.onclick = () => { conectarGoogleCalendar(); btn.remove(); };
+  row.appendChild(btn);
+}
+
+function renderResponsavelInfo() {
+  const row = document.getElementById('cal-resp-row');
+  if (!row) return;
+  const result = leadData.result || {};
+  const resp = result.responsavel || decidirResponsavel(result);
+  result.responsavel = resp;
+  const nomes = { marcelo: 'Marcelo', eduardo: 'Eduardo Lustosa', yves: 'Yves' };
+  row.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;background:rgba(0,200,120,.1);border:1px solid rgba(0,200,120,.25);color:#9fe9c4;font-weight:600">👤 Reunião com: '
+    + (nomes[resp.pessoa] || resp.pessoa) + '</span>';
 }
 
 function getDiasDisponiveis() {
@@ -1714,6 +1975,10 @@ function renderWeek() {
   const btnPrev = document.getElementById('btn-prev');
   const btnNext = document.getElementById('btn-next');
   if (!grid) return;
+
+  const result = leadData.result || {};
+  const resp   = result.responsavel || decidirResponsavel(result);
+  const pessoa = resp.pessoa; // 'marcelo' | 'eduardo' | 'yves'
 
   const hoje = new Date();
   hoje.setHours(0,0,0,0);
@@ -1737,13 +2002,19 @@ function renderWeek() {
     diasMostrar.push(d);
   });
 
-  // Slots reservados (gatilho mental): todos os slots de segunda e parte dos outros dias
-  function isReservado(dt, h) {
-    const dow = dt.getDay(); // 1=seg,2=ter,3=qua,4=qui,5=sex
+  // ── Bloqueio fixo: toda quarta de manhã é bloqueada para os 3 (Marcelo/Eduardo/Yves) ──
+  function isBloqueioQuartaManha(dt, h) {
+    if (!CONFIG.bloqueio_quarta_manha) return false;
+    const dow = dt.getDay();
     const hora = parseInt(h);
-    if (dow === 1 && hora < 12) return true; // segunda: apenas manhã reservada
-    if (dow === 3 && hora < 12) return true; // quarta: apenas manhã reservada
-    return false;
+    return dow === 3 && hora < 12;
+  }
+
+  // ── Disponibilidade real: se a agenda do responsável já foi carregada via Google
+  //    Calendar, bloqueia o slot se ele estiver ocupado. Se a agenda ainda não foi
+  //    carregada (sem token), não bloqueia — mostra tudo livre até conectar.
+  function isOcupadoNaAgendaReal(dt, h) {
+    return pessoaOcupada(pessoa, dt, h);
   }
 
   if (btnPrev) btnPrev.style.display = 'none'; // sem navegação — janela fixa
@@ -1762,25 +2033,25 @@ function renderWeek() {
 
     const dow = dt.getDay();
     const isTerca = dow === 2;
-    const isSeg   = dow === 1;
+    const isQuarta = dow === 3;
 
     const nomeDia = dt.toLocaleDateString('pt-BR', {weekday:'short'}).replace('.','').toUpperCase();
     const numDia  = dt.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
 
     // Cabeçalho
     const hdr = document.createElement('div');
-    hdr.className = 'day-hdr' + (isTerca ? ' day-hdr-destaque' : '') + (isSeg ? ' day-hdr-lotado' : '');
+    hdr.className = 'day-hdr' + (isTerca ? ' day-hdr-destaque' : '') + (isQuarta ? ' day-hdr-lotado' : '');
 
     if (isTerca) {
       hdr.innerHTML =
         '<div class="day-name">' + nomeDia + '</div>' +
         '<div class="day-num">' + numDia + '</div>' +
         '<div class="day-badge-melhor">⭐ Melhor dia</div>';
-    } else if (isSeg) {
+    } else if (isQuarta && CONFIG.bloqueio_quarta_manha) {
       hdr.innerHTML =
         '<div class="day-name">' + nomeDia + '</div>' +
         '<div class="day-num">' + numDia + '</div>' +
-        '<div class="day-badge-lotado">🔴 Agenda cheia</div>';
+        '<div class="day-badge-lotado">🔒 Manhã bloqueada</div>';
     } else {
       hdr.innerHTML =
         '<div class="day-name">' + nomeDia + '</div>' +
@@ -1807,17 +2078,20 @@ function renderWeek() {
       const iso   = dt.toISOString().slice(0,10) + 'T' + h + ':00';
       const label = dt.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'}) + ' às ' + h;
       const btn   = document.createElement('button');
-      const reservado = isReservado(dt, h);
+
+      const bloqueadoFixo = isBloqueioQuartaManha(dt, h);
+      const ocupadoReal   = !bloqueadoFixo && isOcupadoNaAgendaReal(dt, h);
+      const reservado = bloqueadoFixo || ocupadoReal;
 
       if (reservado) {
         btn.className = 'slot slot-reservado';
         btn.textContent = h;
         btn.disabled = true;
-        btn.title = 'Reservado';
+        btn.title = bloqueadoFixo ? 'Manhã de quarta — bloqueada para toda a equipe' : 'Indisponível na agenda';
       } else {
         btn.className = 'slot' + (slotSel && slotSel.iso === iso ? ' selected' : '') + (isTerca ? ' slot-destaque' : '');
         btn.textContent = h;
-        btn.onclick = () => selectSlot(iso, label, btn);
+        btn.onclick = () => selectSlot(iso, label, btn, pessoa);
       }
 
       slotsWrap.appendChild(btn);
@@ -1833,15 +2107,20 @@ function shiftWeek(dir) {
   renderWeek();
 }
 
-function selectSlot(iso, label, btn) {
-  slotSel = { iso, label };
+function selectSlot(iso, label, btn, pessoa) {
+  slotSel = { iso, label, pessoa: pessoa || (leadData.result && leadData.result.responsavel && leadData.result.responsavel.pessoa) };
   document.querySelectorAll('.slot').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 
   const preview     = document.getElementById('slot-preview');
   const previewMain = document.getElementById('slot-preview-main');
+  const previewSub  = document.getElementById('slot-preview-sub');
   if (preview) preview.style.display = 'flex';
   if (previewMain) previewMain.textContent = label;
+  if (previewSub) {
+    const nomes = { marcelo: 'Marcelo', eduardo: 'Eduardo Lustosa', yves: 'Yves' };
+    previewSub.textContent = 'Reunião de 1 hora · Google Meet · com ' + (nomes[slotSel.pessoa] || 'GFB');
+  }
 
   const btnNext = document.getElementById('btn-cal-next');
   if (btnNext) btnNext.disabled = false;
@@ -1868,12 +2147,68 @@ document.addEventListener('DOMContentLoaded', function() {
   if (step4) obs.observe(step4, {attributes: true, attributeFilter: ['class']});
 });
 
+/* ══════════════════════════════════════════════════
+   RELATÓRIO DE DIAGNÓSTICO (texto) — vai na descrição do
+   evento do Google Calendar e no negócio do RD Station
+══════════════════════════════════════════════════ */
+function gerarRelatorioTexto() {
+  const result = leadData.result || {};
+  const resp   = result.responsavel || decidirResponsavel(result);
+  const nomes  = { marcelo: 'Marcelo', eduardo: 'Eduardo Lustosa', yves: 'Yves' };
+  const probs  = result.probs || {};
+
+  const linhas = [];
+  linhas.push('RELATÓRIO DE QUALIFICAÇÃO — GESTÃO FITNESS BRASIL');
+  linhas.push('═'.repeat(48));
+  linhas.push('');
+  linhas.push('LEAD');
+  linhas.push('Nome: ' + (leadData.nome || '—'));
+  linhas.push('WhatsApp: ' + (leadData.whatsapp || '—'));
+  linhas.push('E-mail: ' + (leadData.email || '—'));
+  linhas.push('Cidade: ' + (leadData.cidade || '—'));
+  linhas.push('Alunos: ' + (leadData.alunos || '—'));
+  linhas.push('Faturamento: ' + (leadData.faturamento || '—'));
+  linhas.push('Perfil: ' + (leadData.perfil || '—'));
+  if (leadData.dificuldades) linhas.push('Dificuldades relatadas: ' + leadData.dificuldades);
+  linhas.push('');
+  linhas.push('PRODUTO INDICADO: ' + (result.rec || '—'));
+  linhas.push('Chance de fechamento — Acelerador: ' + (probs.acel ?? '—') + '%  |  PAV: ' + (probs.pav ?? '—') + '%  |  Black Belt: ' + (probs.bb ?? '—') + '%');
+  linhas.push('');
+  linhas.push('RESPONSÁVEL PELA REUNIÃO: ' + (nomes[resp.pessoa] || resp.pessoa));
+  linhas.push('Motivo do roteamento: ' + (resp.motivo || '—'));
+  linhas.push('');
+  linhas.push('BANT');
+  linhas.push('Fluxo de caixa: ' + (qa.situacao || '—') + (qa.fluxo ? ' / ' + qa.fluxo : '') + (qa.reserva ? ' / reserva: ' + qa.reserva : ''));
+  linhas.push('Margem: ' + (qa.margem || '—'));
+  linhas.push('Desafio (Need): ' + (qa.desafio || '—'));
+  linhas.push('Decisor (Authority): ' + (qa.decisor_tipo || '—') + (qa.decisor_confirmou ? ' — ' + qa.decisor_confirmou : ''));
+  linhas.push('Urgência (Timing): ' + (qa.urgencia || '—'));
+  linhas.push('');
+  linhas.push('CRITÉRIOS DE ALERTA');
+  const alertas = [];
+  if (result.disqualified) alertas.push('Desqualificado (margem ou fluxo de caixa negativo)');
+  if (result.baixaUrg) alertas.push('Baixa urgência declarada');
+  if (result.authorityFailed) alertas.push('Decisor não confirmado para a reunião');
+  if (result.training) alertas.push('Indicado como Reunião de Treino');
+  linhas.push(alertas.length ? alertas.join(' · ') : 'Nenhum');
+  linhas.push('');
+  if (slotSel) {
+    linhas.push('AGENDAMENTO');
+    linhas.push('Data/hora: ' + slotSel.label);
+  }
+  linhas.push('');
+  linhas.push('Gerado automaticamente em ' + new Date().toLocaleString('pt-BR'));
+  return linhas.join('\n');
+}
+
 function renderConfirm() {
   const rows = document.getElementById('confirm-rows');
   if (!rows) return;
 
   const result = leadData.result || {};
   const recom  = result.rec || '—';
+  const resp   = result.responsavel || decidirResponsavel(result);
+  const nomes  = { marcelo: 'Marcelo', eduardo: 'Eduardo Lustosa', yves: 'Yves' };
 
   const itens = [
     ['👤 Nome',       leadData.nome],
@@ -1881,6 +2216,7 @@ function renderConfirm() {
     ['📧 E-mail',     leadData.email],
     ['🏙️ Cidade',     leadData.cidade],
     ['📅 Horário',    slotSel ? slotSel.label : '—'],
+    ['🧑‍💼 Com quem', nomes[resp.pessoa] || resp.pessoa],
   ].filter(([,v]) => v);
 
   rows.innerHTML = itens.map(([k,v]) =>
@@ -1911,16 +2247,19 @@ async function confirmar() {
   // Tela de sucesso
   const det = document.getElementById('success-details');
   if (det) {
+    const resp  = (leadData.result && leadData.result.responsavel) || decidirResponsavel(leadData.result || {});
+    const nomes = { marcelo: 'Marcelo', eduardo: 'Eduardo Lustosa', yves: 'Yves' };
     det.innerHTML =
       '📅 ' + (slotSel ? slotSel.label : '—') + '<br>' +
-      '👤 ' + (leadData.nome || '');
+      '👤 ' + (leadData.nome || '') + '<br>' +
+      '🧑‍💼 Com ' + (nomes[resp.pessoa] || resp.pessoa);
   }
 
-  // Google Calendar link
+  // Link manual de fallback (caso a criação automática no Google Calendar falhe)
   if (slotSel) {
     const start = slotSel.iso.replace(/[-:]/g,'').replace('T','T') + '00Z';
     const dtStart = new Date(slotSel.iso);
-    const dtEnd   = new Date(dtStart.getTime() + 60*60*1000);
+    const dtEnd   = new Date(dtStart.getTime() + (CONFIG.duracao_min||60)*60*1000);
     const end   = dtEnd.toISOString().replace(/[-:]/g,'').slice(0,15) + '00Z';
     const title = encodeURIComponent('Consultoria GFB — ' + leadData.nome);
     const gcal  = 'https://calendar.google.com/calendar/render?action=TEMPLATE&text=' + title + '&dates=' + start + '/' + end;
@@ -1932,10 +2271,30 @@ async function confirmar() {
 }
 
 /* ══════════════════════════════════════════════════
-   ENVIO WEBHOOK / RD STATION
+   ENVIO: GOOGLE CALENDAR + SUPABASE + RD STATION
+   ─────────────────────────────────────────────────
+   • TODOS que preenchem o form (qualificados ou não) → vão para o Supabase
+     (tabela leads_webinario), com o relatório completo e as respostas.
+   • Só os QUALIFICADOS com horário marcado → criam evento real no Google
+     Calendar do responsável (Marcelo/Eduardo/Yves) e vão para o funil
+     "Webinário Quente" no RD Station, movidos para "Reunião agendada",
+     com a hora marcada e o relatório colados na descrição do negócio.
 ══════════════════════════════════════════════════ */
+let sbClient = null;
+function getSupabaseClient() {
+  if (sbClient) return sbClient;
+  if (!CONFIG.supabase_url || !CONFIG.supabase_anon_key
+      || CONFIG.supabase_url.indexOf('COLE_SUA') !== -1
+      || typeof window.supabase === 'undefined') return null;
+  sbClient = window.supabase.createClient(CONFIG.supabase_url, CONFIG.supabase_anon_key);
+  return sbClient;
+}
+
 async function enviarWebhook() {
-  const result = leadData.result || {};
+  const result   = leadData.result || {};
+  const relatorio = gerarRelatorioTexto();
+  const resp = result.responsavel || decidirResponsavel(result);
+
   const payload = {
     lead: {
       nome:          leadData.nome,
@@ -1960,45 +2319,65 @@ async function enviarWebhook() {
       disqualified:   result.disqualified,
       training:       result.training,
       rdStageId:      result.rdStageId,
+      responsavel:    resp.pessoa,
+      motivo_resp:    resp.motivo,
     },
-    agendamento: slotSel ? { iso: slotSel.iso, label: slotSel.label } : null,
+    agendamento: slotSel ? { iso: slotSel.iso, label: slotSel.label, pessoa: slotSel.pessoa } : null,
+    relatorio: relatorio,
     ts: new Date().toISOString(),
   };
 
-  // Webhook N8N
-  if (CONFIG.webhook_url && CONFIG.webhook_url !== 'COLE_URL_DO_WEBHOOK_N8N') {
+  // ── 1. SUPABASE — TODOS os leads (qualificados ou não) ──
+  const sb = getSupabaseClient();
+  if (sb) {
     try {
-      await fetch(CONFIG.webhook_url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-    } catch(e) { console.warn('Webhook error:', e); }
-  }
-
-  // Supabase
-  if (CONFIG.supabase_url && CONFIG.supabase_key && CONFIG.supabase_url !== '') {
-    try {
-      await fetch(CONFIG.supabase_url + '/rest/v1/' + CONFIG.supabase_table, {
-        method: 'POST',
-        headers: {
-          'Content-Type':  'application/json',
-          'apikey':        CONFIG.supabase_key,
-          'Authorization': 'Bearer ' + CONFIG.supabase_key,
-          'Prefer':        'return=minimal',
-        },
-        body: JSON.stringify(payload),
+      await sb.from(CONFIG.supabase_table).insert({
+        nome:            leadData.nome || null,
+        whatsapp:        leadData.whatsapp || null,
+        email:           leadData.email || null,
+        cidade:          leadData.cidade || null,
+        alunos:          leadData.alunos || null,
+        faturamento:     leadData.faturamento || null,
+        perfil:          leadData.perfil || null,
+        dificuldades:    leadData.dificuldades || null,
+        qualificacao:    qa,
+        resultado:       payload.resultado,
+        agendamento:     payload.agendamento,
+        responsavel:     resp.pessoa,
+        relatorio:       relatorio,
+        created_at:      new Date().toISOString(),
       });
     } catch(e) { console.warn('Supabase error:', e); }
   }
 
-  // RD Station
+  // Daqui pra baixo só roda se o lead foi QUALIFICADO e tem horário marcado
+  const qualificado = !result.disqualified && result.rec !== 'REUNIÃO DE TREINO';
+  if (!qualificado) return payload;
+
+  // ── 2. GOOGLE CALENDAR — cria o evento real na agenda do responsável ──
+  if (slotSel && gcalToken) {
+    try {
+      const ev = await criarEventoGoogleCalendar(slotSel.pessoa || resp.pessoa, slotSel);
+      if (ev && ev.htmlLink) payload.google_event_link = ev.htmlLink;
+    } catch(e) { console.warn('Google Calendar error:', e); }
+  }
+
+  // ── 3. RD STATION — cria negócio no funil "Webinário Quente",
+  //     move para "Reunião agendada", adiciona hora + relatório na descrição ──
   if (CONFIG.rd_token && CONFIG.rd_token !== 'COLE_SEU_TOKEN_RD_STATION') {
     try {
+      const nomes = { marcelo: 'Marcelo', eduardo: 'Eduardo Lustosa', yves: 'Yves' };
+      const descricao =
+        '📅 Reunião agendada: ' + (slotSel ? slotSel.label : '—') + '\n' +
+        '🧑‍💼 Responsável: ' + (nomes[resp.pessoa] || resp.pessoa) + '\n\n' +
+        relatorio;
+
       const rdBody = {
         deal: {
-          name: leadData.nome + ' — ' + (result.rec || 'Lead'),
-          stage_id: result.rdStageId || CONFIG.rd_stage_qualificado,
+          name:        leadData.nome + ' — ' + (result.rec || 'Lead'),
+          pipeline_id: CONFIG.rd_pipeline_id,                 // funil "Webinário Quente"
+          stage_id:    result.rdStageId || CONFIG.rd_stage_qualificado, // "Reunião agendada"
+          deal_custom_fields: [],
         },
         contact: {
           name:  leadData.nome,
@@ -2006,20 +2385,63 @@ async function enviarWebhook() {
           mobile_phone: leadData.whatsapp,
         },
       };
-      await fetch('https://crm.rdstation.com/api/1.0/deals', {
+
+      const rdResp = await fetch('https://crm.rdstation.com/api/1.0/deals', {
         method: 'POST',
-        headers: {
-          'Content-Type':  'application/json',
-          'Authorization': CONFIG.rd_token,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': CONFIG.rd_token },
         body: JSON.stringify(rdBody),
       });
+      const rdData = await rdResp.json().catch(() => null);
+      const dealId = rdData && (rdData._id || rdData.id);
+
+      // Anota a descrição (hora + relatório) como nota/anotação do negócio
+      if (dealId) {
+        try {
+          await fetch('https://crm.rdstation.com/api/1.0/deals/' + dealId + '/notes?token=' + CONFIG.rd_token, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: descricao }),
+          });
+        } catch(e) { console.warn('RD Station note error:', e); }
+      }
     } catch(e) { console.warn('RD Station error:', e); }
   }
 
   return payload;
 }
 
+/* ══════════════════════════════════════════════════
+   SETUP-SUPABASE.sql — rode isso uma vez no SQL Editor do seu projeto
+   Supabase (supabase.com → seu projeto → SQL Editor → New query) antes
+   de colar a URL e a anon key no CONFIG acima.
+   ─────────────────────────────────────────────────
+
+   create table leads_webinario (
+     id              bigint generated always as identity primary key,
+     nome            text,
+     whatsapp        text,
+     email           text,
+     cidade          text,
+     alunos          text,
+     faturamento     text,
+     perfil          text,
+     dificuldades    text,
+     qualificacao    jsonb,
+     resultado       jsonb,
+     agendamento     jsonb,
+     responsavel     text,
+     relatorio       text,
+     created_at      timestamptz default now()
+   );
+
+   -- Permite que o form (chave anônima) insira linhas, mas não leia/edite:
+   alter table leads_webinario enable row level security;
+   create policy "Permitir insert publico"
+     on leads_webinario for insert
+     to anon
+     with check (true);
+
+══════════════════════════════════════════════════ */
 </script>
 </body>
 </html>
