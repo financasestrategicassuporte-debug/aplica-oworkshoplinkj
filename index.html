@@ -1221,11 +1221,13 @@ const CONFIG = {
   // 4. Adicione o domínio onde esse form vai rodar em "Origens JavaScript autorizadas"
   //    (ex: https://seusite.com.br ou http://localhost:5500 pra testar)
   // 5. Cole o Client ID abaixo. Não precisa de Client Secret (fluxo é 100% client-side).
-  google_client_id:        "COLE_SEU_GOOGLE_CLIENT_ID.apps.googleusercontent.com",
+  // ── Google Apps Script — cria evento direto nas agendas (sem N8N, sem OAuth) ──
+  // Após fazer o deploy do Apps Script, cole a URL aqui:
+  apps_script_url: "COLE_URL_DO_APPS_SCRIPT",
 
-  // E-mails das agendas do Google Calendar de cada closer.
-  // Cada pessoa precisa compartilhar a agenda com "Ver todos os detalhes do evento"
-  // para as outras contas que forem logar aqui (ou usar uma conta de serviço — ver nota no fim).
+  google_client_id:        "",  // não necessário com Apps Script
+
+  // E-mails das agendas (usados no payload enviado ao N8N)
   calendars: {
     marcelo:  "dedelorodrigues@gmail.com",
     eduardo:  "direcaouniclass@gmail.com",
@@ -1617,6 +1619,58 @@ async function reservarSlotNoCalendario(pessoa, slot) {
 async function criarEventoGoogleCalendar(pessoa, slot) {
   const slotEvento = slot.eventoId ? { id: slot.eventoId } : getSlotEvento(pessoa, new Date(slot.iso), new Date(slot.iso).toTimeString().slice(0,5));
   return reservarSlotNoCalendario(pessoa, slotEvento);
+}
+
+/* ══════════════════════════════════════════════════
+   BOOKING VIA GOOGLE APPS SCRIPT
+   ─────────────────────────────────────────────────
+   Sem N8N. Sem OAuth no form. O Apps Script roda com
+   as credenciais de quem fez o deploy (conta GFB que
+   já tem acesso às 3 agendas).
+   POST direto → Apps Script cria o evento.
+══════════════════════════════════════════════════ */
+async function agendarViaAppsScript(pessoa, slotIso, slotLabel) {
+  const url = CONFIG.apps_script_url;
+  if (!url || url.includes('COLE_URL')) {
+    console.warn('Apps Script URL não configurada.');
+    return null;
+  }
+
+  const result = leadData.result || {};
+  const inicio = new Date(slotIso);
+  const fim    = new Date(inicio.getTime() + (CONFIG.duracao_min || 90) * 60 * 1000);
+
+  const payload = {
+    nome:            leadData.nome     || '',
+    email:           leadData.email    || '',
+    whatsapp:        leadData.whatsapp || leadData.telefone || '',
+    academia:        leadData.academia || '',
+    slot_inicio:     inicio.toISOString(),
+    slot_fim:        fim.toISOString(),
+    slot_label:      slotLabel,
+    consultor:       pessoa,
+    consultor_email: CONFIG.calendars[pessoa] || '',
+    consultor_nome:  { marcelo: 'Marcelo', eduardo: 'Eduardo Lustosa', yves: 'Yves' }[pessoa] || pessoa,
+    diagnostico:     result.rec   || '',
+    prob_acel:       result.probs?.acel || 0,
+    prob_pav:        result.probs?.pav  || 0,
+    prob_bb:         result.probs?.bb   || 0,
+    relatorio:       (typeof gerarRelatorioTexto === 'function') ? gerarRelatorioTexto() : '',
+    timestamp:       new Date().toISOString(),
+  };
+
+  try {
+    const r = await fetch(url, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain' }, // Apps Script exige text/plain para evitar CORS preflight
+      body:    JSON.stringify(payload),
+    });
+    if (!r.ok) throw new Error('Apps Script HTTP ' + r.status);
+    return await r.json().catch(() => ({ ok: true }));
+  } catch(e) {
+    console.warn('Erro ao acionar Apps Script:', e);
+    return null;
+  }
 }
 
 /* ══════════════════════════════════════════════════
@@ -2601,18 +2655,27 @@ async function enviarWebhook() {
   const qualificado = !result.disqualified && result.rec !== 'REUNIÃO DE TREINO';
   if (!qualificado) return payload;
 
-  // ── 2. GOOGLE CALENDAR — cria o evento real na agenda do responsável ──
-  if (slotSel && gcalToken) {
+  // ── 2. AGENDAMENTO — N8N primário + Google Calendar direto como fallback ──
+  if (slotSel) {
+    const pessoaFinal = slotSel.pessoa || resp.pessoa;
+
+    // Via N8N (principal — não precisa de OAuth no form)
     try {
-      // Reserva o slot: PATCH se tiver ID de "AGENDAR REUNIÃO AQUI", POST no fallback
-      const pessoaFinal = slotSel.pessoa || resp.pessoa;
-      const slotObj = slotSel.eventoId
-        ? { id: slotSel.eventoId, iso: slotSel.iso }
-        : (getSlotEvento(pessoaFinal, new Date(slotSel.iso), new Date(slotSel.iso).toTimeString().slice(0,5))
-           || { id: null, iso: slotSel.iso }); // fallback: cria novo evento
-      const ev = await reservarSlotNoCalendario(pessoaFinal, slotObj);
-      if (ev && ev.htmlLink) payload.google_event_link = ev.htmlLink;
-    } catch(e) { console.warn('Google Calendar error:', e); }
+      const n8nResult = await agendarViaAppsScript(pessoaFinal, slotSel.iso, slotSel.label);
+      if (n8nResult && n8nResult.event_link) payload.google_event_link = n8nResult.event_link;
+    } catch(e) { console.warn('Apps Script booking error:', e); }
+
+    // Via Google Calendar API direto (fallback se gcalToken disponível)
+    if (gcalToken) {
+      try {
+        const slotObj = slotSel.eventoId
+          ? { id: slotSel.eventoId, iso: slotSel.iso }
+          : { id: null, iso: slotSel.iso };
+        const ev = await reservarSlotNoCalendario(pessoaFinal, slotObj);
+        if (ev && ev.htmlLink) payload.google_event_link = ev.htmlLink;
+      } catch(e) { console.warn('Google Calendar direct error:', e); }
+    }
+    try { // mantém estrutura original do try/catch externo
   }
 
   // ── 3. RD STATION — cria negócio no funil "Webinário Quente",
