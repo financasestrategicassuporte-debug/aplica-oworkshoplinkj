@@ -857,19 +857,19 @@ body{
           <div>
             <label class="pf-label">Selecione a opção que te define *</label>
             <div class="perfis-wrap" id="perfis-wrap">
-              <button class="perfil-opt" onclick="selPerfil(this,'Dono de academia')">
+              <button type="button" class="perfil-opt" onclick="selPerfil(this,'Dono de academia')">
                 <span class="perfil-dot"><span class="perfil-dot-inner"></span></span>Dono de academia
               </button>
-              <button class="perfil-opt" onclick="selPerfil(this,'Dono de studio')">
+              <button type="button" class="perfil-opt" onclick="selPerfil(this,'Dono de studio')">
                 <span class="perfil-dot"><span class="perfil-dot-inner"></span></span>Dono de studio
               </button>
-              <button class="perfil-opt" onclick="selPerfil(this,'Gerente / Gestor')">
+              <button type="button" class="perfil-opt" onclick="selPerfil(this,'Gerente / Gestor')">
                 <span class="perfil-dot"><span class="perfil-dot-inner"></span></span>Gerente / Gestor
               </button>
-              <button class="perfil-opt" onclick="selPerfil(this,'Franqueado')">
+              <button type="button" class="perfil-opt" onclick="selPerfil(this,'Franqueado')">
                 <span class="perfil-dot"><span class="perfil-dot-inner"></span></span>Franqueado
               </button>
-              <button class="perfil-opt" onclick="selPerfil(this,'Outro')">
+              <button type="button" class="perfil-opt" onclick="selPerfil(this,'Outro')">
                 <span class="perfil-dot"><span class="perfil-dot-inner"></span></span>Outro
               </button>
             </div>
@@ -884,7 +884,7 @@ body{
           </div>
 
           <!-- CTA -->
-          <button class="cta-btn" onclick="goQual()">Enviar  →</button>
+          <button type="button" class="cta-btn" onclick="goQual()">Enviar  →</button>
           <div class="cta-trust"><span>🔒</span> Seus dados estão seguros e não serão compartilhados.</div>
         </div>
       </div>
@@ -917,8 +917,8 @@ body{
       <div class="note-lbl">ANOTE — DESCRIÇÃO DO NEGÓCIO</div>
       <textarea class="q-textarea" id="q1-negocio" rows="4" placeholder="Ex: Academia de 5 anos, 400 alunos, foco em musculação, ticket médio R$120, 3 funcionários..."></textarea>
       <div class="q-nav">
-        <button class="btn-back" onclick="goStep('step1')">← Voltar</button>
-        <button class="btn-next" id="next-q1" onclick="goQ(2)" disabled>Próximo →</button>
+        <button type="button" class="btn-back" onclick="goStep('step1')">← Voltar</button>
+        <button type="button" class="btn-next" id="next-q1" onclick="goQ(2)" disabled>Próximo →</button>
       </div>
     </div>
 
@@ -933,15 +933,15 @@ body{
       </div>
       <div class="note-lbl" style="margin-top:4px">MARGEM DE LUCRO (%)</div>
       <div class="opts" style="margin-top:8px">
-        <button class="opt-btn warn-opt" data-q="margem" data-v="lt10" onclick="selQ(this)">Abaixo de 10% — margem muito baixa<span class="check">✓</span></button>
-        <button class="opt-btn" data-q="margem" data-v="10to20" onclick="selQ(this)">10% a 20%<span class="check">✓</span></button>
-        <button class="opt-btn" data-q="margem" data-v="20to30" onclick="selQ(this)">20% a 30%<span class="check">✓</span></button>
-        <button class="opt-btn" data-q="margem" data-v="30to40" onclick="selQ(this)">30% a 40%<span class="check">✓</span></button>
-        <button class="opt-btn" data-q="margem" data-v="gt40" onclick="selQ(this)">Acima de 40% — margem excelente<span class="check">✓</span></button>
+        <button type="button" class="opt-btn warn-opt" data-q="margem" data-v="lt10" onclick="selQ(this)">Abaixo de 10% — margem muito baixa<span class="check">✓</span></button>
+        <button type="button" class="opt-btn" data-q="margem" data-v="10to20" onclick="selQ(this)">10% a 20%<span class="check">✓</span></button>
+        <button type="button" class="opt-btn" data-q="margem" data-v="20to30" onclick="selQ(this)">20% a 30%<span class="check">✓</span></button>
+        <button type="button" class="opt-btn" data-q="margem" data-v="30to40" onclick="selQ(this)">30% a 40%<span class="check">✓</span></button>
+        <button type="button" class="opt-btn" data-q="margem" data-v="gt40" onclick="selQ(this)">Acima de 40% — margem excelente<span class="check">✓</span></button>
       </div>
       <div class="q-nav">
-        <button class="btn-back" onclick="goQ(1)">← Voltar</button>
-        <button class="btn-next" id="next-q2" onclick="goQ(3)" disabled>Próximo →</button>
+        <button type="button" class="btn-back" onclick="goQ(1)">← Voltar</button>
+        <button type="button" class="btn-next" id="next-q2" onclick="goQ(3)" disabled>Próximo →</button>
       </div>
     </div>
 
@@ -956,8 +956,8 @@ body{
       </div>
       <div class="note-lbl" style="margin-top:4px">SITUAÇÃO FINANCEIRA</div>
       <div class="opts-2col" style="margin-top:8px">
-        <button class="opt-btn opt-2col" data-q="situacao" data-v="sobra" onclick="selSituacao(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">Sobra / Sem dívidas</span><span class="check">✓</span></button>
-        <button class="opt-btn opt-2col warn-opt" data-q="situacao" data-v="endividado" onclick="selSituacao(this)"><span style="font-size:22px">⚠️</span><span style="font-size:13px;font-weight:600">Tem endividamento</span><span class="check">✓</span></button>
+        <button type="button" class="opt-btn opt-2col" data-q="situacao" data-v="sobra" onclick="selSituacao(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">Sobra / Sem dívidas</span><span class="check">✓</span></button>
+        <button type="button" class="opt-btn opt-2col warn-opt" data-q="situacao" data-v="endividado" onclick="selSituacao(this)"><span style="font-size:22px">⚠️</span><span style="font-size:13px;font-weight:600">Tem endividamento</span><span class="check">✓</span></button>
       </div>
       <div class="cond-block" id="bloco-fluxo">
         <div class="script-box">
@@ -966,8 +966,8 @@ body{
         </div>
         <div class="note-lbl">FLUXO DE CAIXA</div>
         <div class="opts-2col" style="margin-top:8px">
-          <button class="opt-btn opt-2col" data-q="fluxo" data-v="positivo" onclick="selFluxo(this)"><span style="font-size:22px">📈</span><span style="font-size:13px;font-weight:600">Positivo (lucro)</span><span class="check">✓</span></button>
-          <button class="opt-btn opt-2col danger-opt" data-q="fluxo" data-v="negativo" onclick="selFluxo(this)"><span style="font-size:22px">📉</span><span style="font-size:13px;font-weight:600">Negativo (prejuízo)</span><span class="check">✓</span></button>
+          <button type="button" class="opt-btn opt-2col" data-q="fluxo" data-v="positivo" onclick="selFluxo(this)"><span style="font-size:22px">📈</span><span style="font-size:13px;font-weight:600">Positivo (lucro)</span><span class="check">✓</span></button>
+          <button type="button" class="opt-btn opt-2col danger-opt" data-q="fluxo" data-v="negativo" onclick="selFluxo(this)"><span style="font-size:22px">📉</span><span style="font-size:13px;font-weight:600">Negativo (prejuízo)</span><span class="check">✓</span></button>
         </div>
       </div>
       <div class="cond-block" id="bloco-reserva">
@@ -977,13 +977,13 @@ body{
         </div>
         <div class="note-lbl">TEM FUNDO DE RESERVA?</div>
         <div class="opts-2col" style="margin-top:8px">
-          <button class="opt-btn opt-2col" data-q="reserva" data-v="sim" onclick="selReserva(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">Sim, tem reserva</span><span class="check">✓</span></button>
-          <button class="opt-btn opt-2col danger-opt" data-q="reserva" data-v="nao" onclick="selReserva(this)"><span style="font-size:22px">🚨</span><span style="font-size:13px;font-weight:600">Não tem reserva</span><span class="check">✓</span></button>
+          <button type="button" class="opt-btn opt-2col" data-q="reserva" data-v="sim" onclick="selReserva(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">Sim, tem reserva</span><span class="check">✓</span></button>
+          <button type="button" class="opt-btn opt-2col danger-opt" data-q="reserva" data-v="nao" onclick="selReserva(this)"><span style="font-size:22px">🚨</span><span style="font-size:13px;font-weight:600">Não tem reserva</span><span class="check">✓</span></button>
         </div>
       </div>
       <div class="q-nav">
-        <button class="btn-back" onclick="goQ(2)">← Voltar</button>
-        <button class="btn-next" id="next-q3" onclick="goQ(4)" disabled>Próximo →</button>
+        <button type="button" class="btn-back" onclick="goQ(2)">← Voltar</button>
+        <button type="button" class="btn-next" id="next-q3" onclick="goQ(4)" disabled>Próximo →</button>
       </div>
     </div>
 
@@ -997,16 +997,16 @@ body{
         <p>Hoje, qual você considera que é o seu maior desafio em vendas e crescimento de alunos que está impedindo sua empresa de avançar?</p>
       </div>
       <div class="opts">
-        <button class="opt-btn" data-q="desafio" data-v="matriculas" onclick="selQ(this)"><span class="opt-icon">🎯</span>Aumentar matrículas e reter mais alunos<span class="check">✓</span></button>
-        <button class="opt-btn" data-q="desafio" data-v="time" onclick="selQ(this)"><span class="opt-icon">👥</span>Fazer meu time de vendas performar melhor<span class="check">✓</span></button>
-        <button class="opt-btn" data-q="desafio" data-v="expandir" onclick="selQ(this)"><span class="opt-icon">📍</span>Padronizar e expandir para novas unidades<span class="check">✓</span></button>
-        <button class="opt-btn" data-q="desafio" data-v="margem" onclick="selQ(this)"><span class="opt-icon">💹</span>Melhorar minha margem e lucratividade<span class="check">✓</span></button>
+        <button type="button" class="opt-btn" data-q="desafio" data-v="matriculas" onclick="selQ(this)"><span class="opt-icon">🎯</span>Aumentar matrículas e reter mais alunos<span class="check">✓</span></button>
+        <button type="button" class="opt-btn" data-q="desafio" data-v="time" onclick="selQ(this)"><span class="opt-icon">👥</span>Fazer meu time de vendas performar melhor<span class="check">✓</span></button>
+        <button type="button" class="opt-btn" data-q="desafio" data-v="expandir" onclick="selQ(this)"><span class="opt-icon">📍</span>Padronizar e expandir para novas unidades<span class="check">✓</span></button>
+        <button type="button" class="opt-btn" data-q="desafio" data-v="margem" onclick="selQ(this)"><span class="opt-icon">💹</span>Melhorar minha margem e lucratividade<span class="check">✓</span></button>
       </div>
       <div class="note-lbl">ANOTE — MAIOR DESAFIO RELATADO</div>
       <textarea class="q-textarea" id="q4-nota" rows="3" placeholder="Ex: Muita evasão, pouca captação, equipe sem processo de vendas..."></textarea>
       <div class="q-nav">
-        <button class="btn-back" onclick="goQ(3)">← Voltar</button>
-        <button class="btn-next" id="next-q4" onclick="goQ(5)" disabled>Próximo →</button>
+        <button type="button" class="btn-back" onclick="goQ(3)">← Voltar</button>
+        <button type="button" class="btn-next" id="next-q4" onclick="goQ(5)" disabled>Próximo →</button>
       </div>
     </div>
 
@@ -1022,8 +1022,8 @@ body{
       <div class="note-lbl">ANOTE — DOR OCULTA / MOTIVO REAL</div>
       <textarea class="q-textarea" id="q5-dor" rows="4" placeholder="Ex: Quer provar para a família que conseguiu, quer viajar mais com os filhos, está acumulado de dívidas..."></textarea>
       <div class="q-nav">
-        <button class="btn-back" onclick="goQ(4)">← Voltar</button>
-        <button class="btn-next" onclick="goQ(6)">Próximo →</button>
+        <button type="button" class="btn-back" onclick="goQ(4)">← Voltar</button>
+        <button type="button" class="btn-next" onclick="goQ(6)">Próximo →</button>
       </div>
     </div>
 
@@ -1039,8 +1039,8 @@ body{
       <div class="info-box">🚨 Nosso time só realiza <strong>uma única reunião</strong>. É fundamental que TODOS os decisores estejam presentes. Se vier sozinho e precisar "consultar o sócio depois", a reunião será perdida. Não agende sem confirmar isso.</div>
       <div class="note-lbl">SITUAÇÃO DO DECISOR</div>
       <div class="opts-2col" style="margin-top:8px">
-        <button class="opt-btn opt-2col" data-q="decisor_tipo" data-v="unico" onclick="selDecisor(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">É o único decisor</span><span class="check">✓</span></button>
-        <button class="opt-btn opt-2col warn-opt" data-q="decisor_tipo" data-v="consultar" onclick="selDecisor(this)"><span style="font-size:22px">👥</span><span style="font-size:13px;font-weight:600">Precisa consultar alguém</span><span class="check">✓</span></button>
+        <button type="button" class="opt-btn opt-2col" data-q="decisor_tipo" data-v="unico" onclick="selDecisor(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">É o único decisor</span><span class="check">✓</span></button>
+        <button type="button" class="opt-btn opt-2col warn-opt" data-q="decisor_tipo" data-v="consultar" onclick="selDecisor(this)"><span style="font-size:22px">👥</span><span style="font-size:13px;font-weight:600">Precisa consultar alguém</span><span class="check">✓</span></button>
       </div>
       <div class="cond-block" id="bloco-unico">
         <div class="script-box">
@@ -1049,8 +1049,8 @@ body{
         </div>
         <div class="note-lbl">É CASADO?</div>
         <div class="opts-2col" style="margin-top:8px">
-          <button class="opt-btn opt-2col" data-q="casado" data-v="sim" onclick="selCasado(this)"><span style="font-size:22px">💑</span><span style="font-size:13px;font-weight:600">Sim, casado(a)</span><span class="check">✓</span></button>
-          <button class="opt-btn opt-2col" data-q="casado" data-v="nao" onclick="selCasado(this)"><span style="font-size:22px">🧑</span><span style="font-size:13px;font-weight:600">Não / Solteiro(a)</span><span class="check">✓</span></button>
+          <button type="button" class="opt-btn opt-2col" data-q="casado" data-v="sim" onclick="selCasado(this)"><span style="font-size:22px">💑</span><span style="font-size:13px;font-weight:600">Sim, casado(a)</span><span class="check">✓</span></button>
+          <button type="button" class="opt-btn opt-2col" data-q="casado" data-v="nao" onclick="selCasado(this)"><span style="font-size:22px">🧑</span><span style="font-size:13px;font-weight:600">Não / Solteiro(a)</span><span class="check">✓</span></button>
         </div>
       </div>
       <div class="cond-block" id="bloco-consultar">
@@ -1060,14 +1060,14 @@ body{
         </div>
         <div class="note-lbl">O OUTRO DECISOR CONFIRMOU PRESENÇA?</div>
         <div class="opts-2col" style="margin-top:8px">
-          <button class="opt-btn opt-2col" data-q="decisor_confirmou" data-v="confirmou" onclick="selDecisorConf(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">Confirmou que virá</span><span class="check">✓</span></button>
-          <button class="opt-btn opt-2col warn-opt" data-q="decisor_confirmou" data-v="nao_confirmou" onclick="selDecisorConf(this)"><span style="font-size:22px">⚠️</span><span style="font-size:13px;font-weight:600">Não confirmou, mas gostaria de pré agendar e alinhar com ele para não perder a vaga.</span><span class="check">✓</span></button>
+          <button type="button" class="opt-btn opt-2col" data-q="decisor_confirmou" data-v="confirmou" onclick="selDecisorConf(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">Confirmou que virá</span><span class="check">✓</span></button>
+          <button type="button" class="opt-btn opt-2col warn-opt" data-q="decisor_confirmou" data-v="nao_confirmou" onclick="selDecisorConf(this)"><span style="font-size:22px">⚠️</span><span style="font-size:13px;font-weight:600">Não confirmou, mas gostaria de pré agendar e alinhar com ele para não perder a vaga.</span><span class="check">✓</span></button>
         </div>
         <div class="danger-box" id="aviso-decisor" style="display:none">🚨 É de extrema importância garantir o comparecimento do seu sócio para que a reunião ocorra.</div>
       </div>
       <div class="q-nav">
-        <button class="btn-back" onclick="goQ(5)">← Voltar</button>
-        <button class="btn-next" id="next-q6" onclick="goQ(7)" disabled>Próximo →</button>
+        <button type="button" class="btn-back" onclick="goQ(5)">← Voltar</button>
+        <button type="button" class="btn-next" id="next-q6" onclick="goQ(7)" disabled>Próximo →</button>
       </div>
     </div>
 
@@ -1083,14 +1083,14 @@ body{
 
       <div class="note-lbl">URGÊNCIA DECLARADA PELO LEAD</div>
       <div class="opts" style="margin-top:8px">
-        <button class="opt-btn" data-q="urgencia" data-v="agora" onclick="selQ(this)"><span class="opt-icon">🔥</span>Urgente — agora<span class="check">✓</span></button>
-        <button class="opt-btn" data-q="urgencia" data-v="6meses" onclick="selQ(this)"><span class="opt-icon">📅</span>Próximos 6 meses<span class="check">✓</span></button>
-        <button class="opt-btn warn-opt" data-q="urgencia" data-v="1ano" onclick="selQ(this)"><span class="opt-icon">🕐</span>1 ano ou mais<span class="check">✓</span></button>
+        <button type="button" class="opt-btn" data-q="urgencia" data-v="agora" onclick="selQ(this)"><span class="opt-icon">🔥</span>Urgente — agora<span class="check">✓</span></button>
+        <button type="button" class="opt-btn" data-q="urgencia" data-v="6meses" onclick="selQ(this)"><span class="opt-icon">📅</span>Próximos 6 meses<span class="check">✓</span></button>
+        <button type="button" class="opt-btn warn-opt" data-q="urgencia" data-v="1ano" onclick="selQ(this)"><span class="opt-icon">🕐</span>1 ano ou mais<span class="check">✓</span></button>
       </div>
       <div class="warn-box" id="warn-baixa-urg" style="display:none">⚠️ <strong>Cautela máxima.</strong> Considere não agendar ou qualificar como Reunião de Treino.</div>
       <div class="q-nav">
-        <button class="btn-back" onclick="goQ(6)">← Voltar</button>
-        <button class="btn-next diagnose" id="next-q7" onclick="finishQual()" disabled>Ver Diagnóstico Final →</button>
+        <button type="button" class="btn-back" onclick="goQ(6)">← Voltar</button>
+        <button type="button" class="btn-next diagnose" id="next-q7" onclick="finishQual()" disabled>Ver Diagnóstico Final →</button>
       </div>
     </div>
 
@@ -1108,9 +1108,9 @@ body{
       <div class="day-hint" id="cal-day-hint"></div>
       <div class="cal-resp-row" id="cal-resp-row" style="display:flex;gap:8px;align-items:center;margin-bottom:14px;font-size:12px;color:#8d968d;flex-wrap:wrap"></div>
       <div class="cal-nav-row">
-        <button class="cal-arrow" id="btn-prev" onclick="shiftWeek(-1)" disabled>‹</button>
+        <button type="button" class="cal-arrow" id="btn-prev" onclick="shiftWeek(-1)" disabled>‹</button>
         <span class="cal-title" id="cal-range"></span>
-        <button class="cal-arrow" id="btn-next" onclick="shiftWeek(1)">›</button>
+        <button type="button" class="cal-arrow" id="btn-next" onclick="shiftWeek(1)">›</button>
       </div>
       <div class="days-grid" id="days-grid"></div>
       <div class="cal-loading" id="cal-loading" style="display:none;text-align:center;padding:20px;color:#8d968d;font-size:13px">⏳ Carregando disponibilidade das agendas...</div>
@@ -1119,12 +1119,12 @@ body{
         <div>
           <div class="slot-preview-main" id="slot-preview-main">—</div>
           <div class="slot-preview-sub" id="slot-preview-sub">Reunião de 1h30 · Google Meet</div>
-          <button class="slot-change" onclick="clearSlot()">Trocar horário</button>
+          <button type="button" class="slot-change" onclick="clearSlot()">Trocar horário</button>
         </div>
       </div>
     </div>
-    <button class="btn-primary" id="btn-cal-next" onclick="goStep('step4')" disabled>Continuar →</button>
-    <button class="btn-secondary" onclick="goStep('step2');goQ(7)">← Voltar</button>
+    <button type="button" class="btn-primary" id="btn-cal-next" onclick="goStep('step4')" disabled>Continuar →</button>
+    <button type="button" class="btn-secondary" onclick="goStep('step2');goQ(7)">← Voltar</button>
   </div>
 </div>
 
@@ -1137,7 +1137,7 @@ body{
       <div style="font-size:48px;margin-bottom:16px">📋</div>
       <div style="font-size:20px;font-weight:800;margin-bottom:8px">Quase lá!</div>
       <p style="font-size:14px;color:#8d968d;line-height:1.65;margin-bottom:24px">Recebemos seus dados. Nossa equipe vai analisar seu perfil e entrar em contato pelo WhatsApp em breve.</p>
-      <button class="btn-primary" id="btn-nq-confirm" onclick="confirmarNQ()" style="max-width:300px;margin:0 auto">
+      <button type="button" class="btn-primary" id="btn-nq-confirm" onclick="confirmarNQ()" style="max-width:300px;margin:0 auto">
         <span id="nq-txt">✅ Confirmar interesse</span>
       </button>
     </div>
@@ -1156,10 +1156,10 @@ body{
     </div>
     <div class="decisor-warn-box" id="decisor-warn" style="display:none">👥 <strong>Lembrete:</strong> Confirme que todos os decisores (sócio, cônjuge, financeiro) estarão presentes. Nosso time realiza apenas <strong>uma única reunião</strong> por empresa.</div>
     <div class="notice-box">📌 <strong>Após confirmar:</strong> você receberá a confirmação no WhatsApp com o link do Google Meet. Nossa reunião será de <strong>1 hora</strong>. Ao final decidimos juntos se faz sentido avançar.</div>
-    <button class="btn-primary" id="btn-confirmar" onclick="confirmar()">
+    <button type="button" class="btn-primary" id="btn-confirmar" onclick="confirmar()">
       <span id="confirmar-txt">🎯 Confirmar Agendamento</span>
     </button>
-    <button class="btn-secondary" onclick="goStep('step3')">← Voltar</button>
+    <button type="button" class="btn-secondary" onclick="goStep('step3')">← Voltar</button>
   </div>
 </div>
 
@@ -2675,7 +2675,6 @@ async function enviarWebhook() {
         if (ev && ev.htmlLink) payload.google_event_link = ev.htmlLink;
       } catch(e) { console.warn('Google Calendar direct error:', e); }
     }
-    try { // mantém estrutura original do try/catch externo
   }
 
   // ── 3. RD STATION — cria negócio no funil "Webinário Quente",
