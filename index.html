@@ -1104,7 +1104,7 @@ body{
   <div class="cal-wrap">
     <div class="section-card">
       <div class="section-title">📅 Escolha o melhor horário</div>
-      <div class="section-sub" id="cal-sub">Selecione o dia e horário para sua consultoria de 1 hora</div>
+      <div class="section-sub" id="cal-sub">Selecione o dia e horário para sua consultoria de 1h30</div>
       <div class="day-hint" id="cal-day-hint"></div>
       <div class="cal-resp-row" id="cal-resp-row" style="display:flex;gap:8px;align-items:center;margin-bottom:14px;font-size:12px;color:#8d968d;flex-wrap:wrap"></div>
       <div class="cal-nav-row">
@@ -1118,7 +1118,7 @@ body{
         <span style="font-size:24px">✅</span>
         <div>
           <div class="slot-preview-main" id="slot-preview-main">—</div>
-          <div class="slot-preview-sub" id="slot-preview-sub">Reunião de 1 hora · Google Meet</div>
+          <div class="slot-preview-sub" id="slot-preview-sub">Reunião de 1h30 · Google Meet</div>
           <button class="slot-change" onclick="clearSlot()">Trocar horário</button>
         </div>
       </div>
@@ -1227,17 +1227,18 @@ const CONFIG = {
   // Cada pessoa precisa compartilhar a agenda com "Ver todos os detalhes do evento"
   // para as outras contas que forem logar aqui (ou usar uma conta de serviço — ver nota no fim).
   calendars: {
-    marcelo:  "marcelo@gestaofitnessbrasil.com.br",
-    eduardo:  "eduardo@gestaofitnessbrasil.com.br",
-    yves:     "yves@gestaofitnessbrasil.com.br",
+    marcelo:  "dedelorodrigues@gmail.com",
+    eduardo:  "direcaouniclass@gmail.com",
+    yves:     "ssolucoesempresariais4@gmail.com",
   },
 
   especialista:            "Especialista GFB",
-  duracao_min:             60,
+  duracao_min:             90,  // 1h30 por reunião
   // dias da semana com reunião (1=seg ... 5=sex). Quarta-feira (3) fica de fora
   // do período da manhã via BLOQUEIO_QUARTA_MANHA abaixo — toda quarta de manhã é bloqueada para todo mundo.
   dias_disponiveis:        [1,2,3,4,5],
-  horarios:                ["09:00","10:00","11:00","14:00","15:00","16:00"],
+  // Slots de 1h30: 09:00→10:30 / 10:30→12:00 / 12:00→13:30(bloqueado) / 14:30→16:00 / 15:30→17:00
+  horarios:                ["09:00","10:30","12:00","14:30","15:30"],
   janela_dias:             10,
   colunas:                 5,
 
@@ -1249,73 +1250,120 @@ const CONFIG = {
   // em QUALQUER um dos próximos N dias úteis (ver dias_verificar_atolado).
   atolado_min_reunioes:    3,
   dias_verificar_atolado:  2,
+
+  // ── Maicon (Marcelo): máximo de reuniões PAV como backup do Lustosa ──
+  // Eduardo é o especialista PAV com maior conversão. Maicon entra SOMENTE
+  // quando Eduardo está sem agenda — e só aceita 1 reunião PAV por janela.
+  // Depois desse 1 slot, o overflow vai para o Yves.
+  marcelo_max_pav_slots:  1,
 };
 
 /* ══════════════════════════════════════════════════
-   ROTEAMENTO DE RESPONSÁVEL (Marcelo / Eduardo / Yves)
+   ROTEAMENTO DE RESPONSÁVEL — GFB
    ─────────────────────────────────────────────────
-   Regra do Marcelo:
-   • PAV / Black Belt / Acelerador com viés de "produto PAV" → especialista é o EDUARDO
-     (ele é o especialista do PAV). Se a agenda do Eduardo estiver "atolada" nos
-     próximos N dias úteis, a reunião cai para o MARCELO (pra não esfriar o lead).
-   • Demais reuniões (recomendação ACELERADOR puro, reunião de treino, etc.) → YVES.
-   • Se o volume de PAV estiver alto e a agenda do Yves tiver muito espaço enquanto
-     a do Eduardo/Marcelo está cheia, o sistema também pode oferecer Yves como
-     alternativa para "outras reuniões" — isso já é o comportamento padrão acima.
+   REGRA DEFINITIVA (Maicon / Eduardo / Yves):
+
+   ┌─────────────────────────────────────────────────────────┐
+   │  Diagnóstico     │  Responsável principal               │
+   ├─────────────────────────────────────────────────────────┤
+   │  PAV / Black Belt│ 1º Eduardo Lustosa (maior conversão) │
+   │                  │ 2º Maicon — somente 1 slot de backup │
+   │                  │ 3º Yves — quando Maicon já tem 1     │
+   ├─────────────────────────────────────────────────────────┤
+   │  Acelerador      │ Yves (closer do Acelerador)          │
+   ├─────────────────────────────────────────────────────────┤
+   │  Treino / Outro  │ Yves                                 │
+   └─────────────────────────────────────────────────────────┘
 ══════════════════════════════════════════════════ */
 let agendaCache = { marcelo: null, eduardo: null, yves: null, fetchedAt: null };
 
 function decidirResponsavel(result) {
-  // result vem de calcResults() — result.rec é "PAV", "BLACK BELT", "ACELERADOR" ou treino/desq.
   const rec = (result && result.rec) || '';
   const isPAVorBB = rec === 'PAV' || rec === 'BLACK BELT';
 
+  // ── ACELERADOR e outros → Yves (closer do Acelerador) ──
   if (!isPAVorBB) {
-    return { pessoa: 'yves', motivo: 'Reunião padrão (não-PAV) — fica com o Yves.' };
+    return {
+      pessoa: 'yves',
+      motivo: rec === 'ACELERADOR'
+        ? 'Acelerador — Yves é o closer responsável.'
+        : 'Reunião de treino — Yves conduz.',
+    };
   }
 
-  // É PAV/BB → por padrão vai para o Eduardo (especialista)
-  const eduardoAtolado = checarAtolado('eduardo');
-  if (eduardoAtolado) {
-    return { pessoa: 'marcelo', motivo: 'Eduardo atolado nos próximos ' + CONFIG.dias_verificar_atolado + ' dias — Marcelo assume para não esfriar o lead.' };
+  // ── PAV / BLACK BELT → Lustosa é o 1º (maior conversão) ──
+  const eduardoLivre = !checarAtolado('eduardo');
+  if (eduardoLivre) {
+    return {
+      pessoa: 'eduardo',
+      motivo: 'PAV/Black Belt — Eduardo Lustosa (especialista, maior conversão).',
+    };
   }
-  return { pessoa: 'eduardo', motivo: 'PAV/Black Belt — especialista Eduardo com agenda livre.' };
+
+  // ── Eduardo ocupado → Maicon, mas só 1 slot de backup ──
+  const marceloTemSlot = checarSlotMarcelo();
+  if (marceloTemSlot) {
+    return {
+      pessoa: 'marcelo',
+      motivo: 'Eduardo sem agenda — Maicon assume o slot PAV de backup (1 por janela).',
+    };
+  }
+
+  // ── Maicon já usou o 1 slot → Yves conduz o PAV ──
+  return {
+    pessoa: 'yves',
+    motivo: 'Eduardo e Maicon sem disponibilidade — Yves conduz a reunião PAV.',
+  };
 }
 
+/* Verifica se Eduardo está "atolado" (agenda cheia nos próximos N dias úteis) */
 function checarAtolado(pessoa) {
   const cal = agendaCache[pessoa];
-  if (!cal || !cal.eventosPorDia) return false; // sem dados ainda → assume livre (não bloqueia o fluxo)
+  if (!cal || !cal.eventosPorDia) return false; // sem dados → assume livre
   const hoje = new Date(); hoje.setHours(0,0,0,0);
   let diasUteisChecados = 0;
   for (let i = 1; diasUteisChecados < CONFIG.dias_verificar_atolado && i <= 10; i++) {
     const d = new Date(hoje); d.setDate(hoje.getDate() + i);
-    if (d.getDay() === 0 || d.getDay() === 6) continue; // pula fim de semana
+    if (d.getDay() === 0 || d.getDay() === 6) continue;
     diasUteisChecados++;
-    const key = d.toISOString().slice(0,10);
-    const n = cal.eventosPorDia[key] || 0;
-    if (n >= CONFIG.atolado_min_reunioes) return true;
+    const key = d.toISOString().slice(0, 10);
+    if ((cal.eventosPorDia[key] || 0) >= CONFIG.atolado_min_reunioes) return true;
   }
   return false;
 }
 
-/* ══════════════════════════════════════════════════
-   GOOGLE CALENDAR — LOGIN + LEITURA + CRIAÇÃO DE EVENTO
-   ─────────────────────────────────────────────────
-   Fluxo: usamos o Google Identity Services (GIS) para pedir um token de
-   acesso OAuth (escopo calendar) da conta de quem estiver logado no
-   navegador que abrir este form (em geral: o time interno, no laptop,
-   antes de mandar o link de horários pro lead — ou o próprio lead loga
-   com a conta dele só pra LEITURA pública de disponibilidade, se você
-   preferir simplificar trocando para "calendar.readonly" + conta de serviço).
+/* Verifica se Maicon ainda tem o slot de backup PAV disponível.
+   Ele aceita somente CONFIG.marcelo_max_pav_slots reunião(ões) como backup.
+   Conta todos os eventos na janela — se já atingiu o limite, overflow vai pro Yves. */
+function checarSlotMarcelo() {
+  const cal = agendaCache.marcelo;
+  if (!cal || !cal.eventosPorDia) return true; // sem dados → assume slot disponível
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  let total = 0;
+  for (let i = 1; i <= CONFIG.janela_dias; i++) {
+    const d = new Date(hoje); d.setDate(hoje.getDate() + i);
+    const key = d.toISOString().slice(0, 10);
+    total += cal.eventosPorDia[key] || 0;
+  }
+  return total < CONFIG.marcelo_max_pav_slots;
+}
 
-   IMPORTANTE: pra funcionar sem o lead precisar logar no Google, o jeito
-   mais simples é VOCÊ (Marcelo) abrir este form uma vez por dia / sessão
-   e clicar em "Conectar Google Calendar" — o token fica válido por algumas
-   horas e o form consulta as 3 agendas (Marcelo, Eduardo, Yves) desde que
-   elas estejam compartilhadas com a sua conta com permissão de leitura.
+/* ══════════════════════════════════════════════════
+   GOOGLE CALENDAR — LOGIN + SLOTS "AGENDAR REUNIÃO AQUI"
+   ─────────────────────────────────────────────────
+   LÓGICA:
+   • Os consultores bloqueiam horários disponíveis criando eventos chamados
+     exatamente "AGENDAR REUNIÃO AQUI" em suas agendas.
+   • O form busca esses eventos e mostra APENAS esses horários no calendário.
+   • Quando o lead confirma, fazemos PATCH no evento existente (sem criar novo),
+     substituindo o título e adicionando os dados da reunião.
+   • Slots sem "AGENDAR REUNIÃO AQUI" são tratados como ocupados/indisponíveis.
 ══════════════════════════════════════════════════ */
-let gcalToken = null;
-let gcalTokenClient = null;
+
+const SLOT_LIVRE_TITULO = 'AGENDAR REUNIÃO AQUI'; // exato, case-insensitive
+
+let gcalToken        = null;
+let gcalTokenClient  = null;
 
 function initGoogleAuth() {
   if (!window.google || !google.accounts || !google.accounts.oauth2) {
@@ -1344,96 +1392,232 @@ async function buscarEventos(emailAgenda, fromISO, toISO) {
     + encodeURIComponent(emailAgenda) + '/events'
     + '?timeMin=' + encodeURIComponent(fromISO)
     + '&timeMax=' + encodeURIComponent(toISO)
-    + '&singleEvents=true&orderBy=startTime';
+    + '&singleEvents=true&orderBy=startTime&maxResults=100';
   const r = await fetch(url, { headers: { 'Authorization': 'Bearer ' + gcalToken } });
   if (!r.ok) throw new Error('Google Calendar HTTP ' + r.status + ' (' + emailAgenda + ')');
   return r.json();
 }
 
+/* ══════════════════════════════════════════════════
+   CARREGA AGENDAS: "AGENDAR REUNIÃO AQUI" + todos os eventos
+   ─────────────────────────────────────────────────
+   Estratégia de dois níveis:
+   1º) Slots "AGENDAR REUNIÃO AQUI" → horários pré-bloqueados pelo consultor
+   2º) Fallback: se o dia não tiver nenhum "AGENDAR REUNIÃO AQUI",
+       mostra os horários livres de 09h–17h (janelas de 1h30)
+══════════════════════════════════════════════════ */
 async function carregarAgendasReais() {
   if (!gcalToken) return;
   const loadingEl = document.getElementById('cal-loading');
   if (loadingEl) loadingEl.style.display = 'block';
 
   const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const fim  = new Date(hoje); fim.setDate(hoje.getDate() + CONFIG.janela_dias);
-  const fromISO = hoje.toISOString();
-  const toISO   = fim.toISOString();
+  const fim  = new Date(hoje); fim.setDate(hoje.getDate() + CONFIG.janela_dias + 1);
+  const minISO = hoje.toISOString();
+  const maxISO = fim.toISOString();
 
-  for (const pessoa of Object.keys(CONFIG.calendars)) {
+  for (const pessoa of ['marcelo','eduardo','yves']) {
     try {
-      const data = await buscarEventos(CONFIG.calendars[pessoa], fromISO, toISO);
-      const eventos = data.items || [];
-      const ocupados = new Set();      // 'YYYY-MM-DDTHH:00' bloqueados
-      const eventosPorDia = {};        // 'YYYY-MM-DD' -> contagem
-      eventos.forEach(ev => {
-        if (!ev.start || !ev.start.dateTime) return; // ignora eventos de dia inteiro
-        const dt = new Date(ev.start.dateTime);
-        const dayKey = dt.toISOString().slice(0,10);
-        eventosPorDia[dayKey] = (eventosPorDia[dayKey] || 0) + 1;
-        // marca a hora cheia (e a anterior, caso o evento ocupe mais de 1h) como ocupada
-        const dtEnd = ev.end && ev.end.dateTime ? new Date(ev.end.dateTime) : new Date(dt.getTime()+60*60*1000);
-        for (let t = new Date(dt); t < dtEnd; t.setHours(t.getHours()+1)) {
-          ocupados.add(t.toISOString().slice(0,13)); // YYYY-MM-DDTHH
-        }
+      const email  = CONFIG.calendars[pessoa];
+      const dados  = await buscarEventos(email, minISO, maxISO);
+      const todos  = dados.items || [];
+
+      /* ── Slots "AGENDAR REUNIÃO AQUI" (nível 1) ── */
+      const slots = todos
+        .filter(e => (e.summary || '').trim().toUpperCase() === SLOT_LIVRE_TITULO.toUpperCase())
+        .map(e => {
+          const iso    = e.start.dateTime || e.start.date;
+          const isoFim = e.end.dateTime   || e.end.date;
+          const dt     = new Date(iso);
+          return {
+            id: e.id, iso, isoFim, dt,
+            dayKey: dt.toISOString().slice(0,10),
+            hrKey:  dt.toISOString().slice(0,13), // YYYY-MM-DDTHH
+            calEmail: email,
+          };
+        });
+
+      const porHora = new Map();
+      const porDia  = {};
+      slots.forEach(s => {
+        porHora.set(s.hrKey, s);
+        porDia[s.dayKey] = (porDia[s.dayKey] || 0) + 1;
       });
-      agendaCache[pessoa] = { eventosPorDia, ocupados, ok: true };
-    } catch (e) {
-      console.warn('Erro ao carregar agenda de ' + pessoa + ':', e);
-      agendaCache[pessoa] = { eventosPorDia: {}, ocupados: new Set(), ok: false, erro: e.message };
+
+      /* ── Todos os eventos reais (para verificar sobreposição no fallback) ── */
+      // Exclui eventos all-day e o próprio "AGENDAR REUNIÃO AQUI"
+      const eventosReais = todos
+        .filter(e => e.start.dateTime) // só eventos com hora definida
+        .filter(e => (e.summary || '').trim().toUpperCase() !== SLOT_LIVRE_TITULO.toUpperCase())
+        .map(e => ({
+          id:    e.id,
+          title: e.summary || '',
+          inicio: new Date(e.start.dateTime),
+          fim:    new Date(e.end.dateTime),
+        }));
+
+      agendaCache[pessoa] = { slots, porHora, porDia, eventosReais, ok: true };
+    } catch(e) {
+      agendaCache[pessoa] = {
+        slots: [], porHora: new Map(), porDia: {}, eventosReais: [], ok: false, erro: e.message,
+      };
+      console.warn('Erro ao carregar agenda de ' + pessoa + ':', e.message);
     }
   }
+
   agendaCache.fetchedAt = Date.now();
   if (loadingEl) loadingEl.style.display = 'none';
-  if (document.getElementById('step3').classList.contains('active')) renderWeek();
+  if (document.getElementById('step3') && document.getElementById('step3').classList.contains('active')) {
+    renderWeek();
+  }
 }
 
-function pessoaOcupada(pessoa, dt, hora) {
+/* ══════════════════════════════════════════════════
+   VERIFICA DISPONIBILIDADE DO SLOT
+   Nível 1 — "AGENDAR REUNIÃO AQUI" (prioridade máxima)
+   Nível 2 — Fallback: hora livre na agenda real (sem sobreposição 1h30)
+══════════════════════════════════════════════════ */
+function pessoaTemSlot(pessoa, dt, h) {
   const cal = agendaCache[pessoa];
-  if (!cal || !cal.ok) return false; // sem conexão real ainda → não bloqueia (modo "agenda não carregada")
-  const d = new Date(dt);
-  const [hh] = hora.split(':');
-  d.setHours(parseInt(hh), 0, 0, 0);
-  const key = d.toISOString().slice(0,13);
-  return cal.ocupados.has(key);
+
+  // ── Sem conexão ao Google Calendar ainda → otimista: mostra tudo ──
+  // (após conectar, a agenda real substitui e bloqueia os ocupados)
+  if (!cal) return true;
+
+  const [hh, mm] = h.split(':').map(Number);
+  const inicio = new Date(dt);
+  inicio.setHours(hh, mm || 0, 0, 0);
+  const hrKey = inicio.toISOString().slice(0, 13);
+
+  // ── Nível 1: existe "AGENDAR REUNIÃO AQUI" nessa hora? → mostra ──
+  if (cal.porHora && cal.porHora.has(hrKey)) return true;
+
+  // ── Falha na conexão → otimista também ──
+  if (!cal.ok) return true;
+
+  // ── Nível 2 (fallback de agenda livre):
+  //    Se o dia tem slots "AGENDAR REUNIÃO AQUI", usa SÓ eles.
+  //    Se o dia não tem nenhum, verifica horário livre (sem sobreposição). ──
+  const dayKey = inicio.toISOString().slice(0, 10);
+  const diaTemSlotExplicito = cal.porDia && (cal.porDia[dayKey] || 0) > 0;
+  if (diaTemSlotExplicito) return false; // dia tem slots explícitos → só eles aparecem
+
+  // Slot de 15:30 não pode ultrapassar 17:00
+  const duracao = (CONFIG.duracao_min || 90) * 60 * 1000;
+  const fim = new Date(inicio.getTime() + duracao);
+  const limite = new Date(dt); limite.setHours(17, 0, 0, 0);
+  if (fim > limite) return false;
+
+  // Verifica sobreposição com eventos reais da agenda
+  const temConflito = (cal.eventosReais || []).some(ev => {
+    return !(ev.fim <= inicio || ev.inicio >= fim);
+  });
+
+  return !temConflito;
 }
 
-/* Cria o evento na agenda do responsável + convida o lead */
-async function criarEventoGoogleCalendar(pessoa, slot) {
-  if (!gcalToken) return null;
-  const emailAgenda = CONFIG.calendars[pessoa];
-  if (!emailAgenda) return null;
+// pessoaTemSlot: definida acima em carregarAgendasReais com fallback de agenda livre
 
-  const start = new Date(slot.iso);
-  const end   = new Date(start.getTime() + CONFIG.duracao_min*60*1000);
+/* Retorna o objeto do slot "AGENDAR REUNIÃO AQUI" (com ID para PATCH).
+   No modo fallback (hora livre), retorna null — o PATCH não terá ID de evento
+   e reservarSlotNoCalendario criará um evento novo nesse caso. */
+function getSlotEvento(pessoa, dt, h) {
+  const cal = agendaCache[pessoa];
+  if (!cal || !cal.porHora) return null;
+  const [hh, mm] = h.split(':');
+  const d = new Date(dt);
+  d.setHours(parseInt(hh), parseInt(mm||0), 0, 0);
+  const hrKey = d.toISOString().slice(0, 13);
+  return cal.porHora.get(hrKey) || null; // null no fallback = cria novo evento
+}
+
+/* Verificação de "atolado" usando contagem de slots disponíveis (menos slots = mais ocupado) */
+function checarAtolado(pessoa) {
+  const cal = agendaCache[pessoa];
+  if (!cal || !cal.slots) return false;
+  // Eduardo é considerado "atolado" se tiver MENOS de N slots nos próximos X dias úteis
+  // (pouco espaço na agenda → redireciona para Marcelo)
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  let slotsNaJanela = 0;
+  for (let i = 1; i <= CONFIG.dias_verificar_atolado * 2; i++) {
+    const d = new Date(hoje); d.setDate(hoje.getDate() + i);
+    if (d.getDay() === 0 || d.getDay() === 6) continue;
+    const key = d.toISOString().slice(0,10);
+    slotsNaJanela += cal.porDia[key] || 0;
+  }
+  return slotsNaJanela < CONFIG.atolado_min_reunioes;
+}
+
+function checarSlotMarcelo() {
+  const cal = agendaCache.marcelo;
+  if (!cal || !cal.slots) return true; // sem dados → assume disponível
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  let total = 0;
+  for (let i = 1; i <= CONFIG.janela_dias; i++) {
+    const d = new Date(hoje); d.setDate(hoje.getDate() + i);
+    total += cal.porDia[d.toISOString().slice(0,10)] || 0;
+  }
+  return total < CONFIG.marcelo_max_pav_slots;
+}
+
+/* Reserva o slot no Google Calendar.
+   Se slot.id existir (evento "AGENDAR REUNIÃO AQUI") → PATCH (atualiza o evento)
+   Se slot.id for null (fallback de hora livre)        → POST  (cria evento novo) */
+async function reservarSlotNoCalendario(pessoa, slot) {
+  if (!gcalToken) return null;
+  const email = CONFIG.calendars[pessoa];
+  if (!email) return null;
+
+  const inicio = slot && slot.iso ? new Date(slot.iso) : null;
+  if (!inicio || isNaN(inicio)) return null;
+  const fim = new Date(inicio.getTime() + (CONFIG.duracao_min || 90) * 60 * 1000);
 
   const body = {
-    summary: 'Consultoria GFB — ' + (leadData.nome || 'Lead'),
-    description: gerarRelatorioTexto(),
-    start: { dateTime: start.toISOString() },
-    end:   { dateTime: end.toISOString() },
-    attendees: leadData.email ? [{ email: leadData.email }] : [],
+    summary:     'Consultoria GFB — ' + (leadData.nome || 'Lead'),
+    description: (typeof gerarRelatorioTexto === 'function') ? gerarRelatorioTexto() : '',
+    start:       { dateTime: inicio.toISOString() },
+    end:         { dateTime: fim.toISOString() },
+    attendees:   leadData.email ? [{ email: leadData.email }] : [],
     conferenceData: { createRequest: { requestId: 'gfb-' + Date.now() } },
   };
 
   try {
-    const r = await fetch(
-      'https://www.googleapis.com/calendar/v3/calendars/' + encodeURIComponent(emailAgenda)
-      + '/events?conferenceDataVersion=1&sendUpdates=all',
-      {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + gcalToken, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      }
-    );
+    let url, method;
+    if (slot && slot.id) {
+      // ── PATCH: atualiza o "AGENDAR REUNIÃO AQUI" existente ──
+      url    = 'https://www.googleapis.com/calendar/v3/calendars/'
+               + encodeURIComponent(email) + '/events/' + encodeURIComponent(slot.id)
+               + '?conferenceDataVersion=1&sendUpdates=all';
+      method = 'PATCH';
+    } else {
+      // ── POST: cria evento novo no slot livre (fallback) ──
+      url    = 'https://www.googleapis.com/calendar/v3/calendars/'
+               + encodeURIComponent(email) + '/events'
+               + '?conferenceDataVersion=1&sendUpdates=all';
+      method = 'POST';
+    }
+
+    const r = await fetch(url, {
+      method,
+      headers: {
+        'Authorization': 'Bearer ' + gcalToken,
+        'Content-Type':  'application/json',
+      },
+      body: JSON.stringify(body),
+    });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
-  } catch (e) {
-    console.warn('Erro ao criar evento no Google Calendar:', e);
+  } catch(e) {
+    console.warn('Erro ao reservar slot no Google Calendar:', e);
     return null;
   }
 }
 
+/* Compatibilidade — mantemos criarEventoGoogleCalendar apontando para reservarSlot */
+async function criarEventoGoogleCalendar(pessoa, slot) {
+  const slotEvento = slot.eventoId ? { id: slot.eventoId } : getSlotEvento(pessoa, new Date(slot.iso), new Date(slot.iso).toTimeString().slice(0,5));
+  return reservarSlotNoCalendario(pessoa, slotEvento);
+}
 
 /* ══════════════════════════════════════════════════
    SCORING — algoritmo GFB completo
@@ -1961,12 +2145,48 @@ function renderResponsavelInfo() {
   const resp = result.responsavel || decidirResponsavel(result);
   result.responsavel = resp;
   const nomes = { marcelo: 'Marcelo', eduardo: 'Eduardo Lustosa', yves: 'Yves' };
+
   row.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;background:rgba(0,200,120,.1);border:1px solid rgba(0,200,120,.25);color:#9fe9c4;font-weight:600">👤 Reunião com: '
-    + (nomes[resp.pessoa] || resp.pessoa) + '</span>';
+    + (nomes[resp.pessoa] || resp.pessoa) + '</span>'
+;
 }
 
 function getDiasDisponiveis() {
   return CONFIG.dias_disponiveis || [1,2,3,4,5];
+}
+
+/* ══════════════════════════════════════════════════
+   PRIORIZAÇÃO DE DIAS POR QUALIFICAÇÃO
+   ─────────────────────────────────────────────────
+   PAV / Black Belt   → Terça + Quarta  (agenda do especialista Lustosa)
+   Acelerador quente  → Ter+Qua+Qui+Sex (pot. PAV+BB ≥ 35)
+   Acelerador normal  → Quinta + Sexta  (agenda do Yves)
+   Treino potencial   → Segunda + Quinta (acel ≥ 40)
+   Treino fraco       → Só Segunda       (baixa prioridade)
+══════════════════════════════════════════════════ */
+function getDiasCalendario(result) {
+  const rec   = (result && result.rec)   || '';
+  const probs = (result && result.probs) || {};
+
+  // PAV / Black Belt → Lustosa tem agenda mais livre nas manhãs de Ter/Qua
+  if (rec === 'PAV' || rec === 'BLACK BELT') {
+    return [2, 3]; // Terça, Quarta
+  }
+
+  // Acelerador — diferencia pelo potencial de upgrade
+  if (rec === 'ACELERADOR') {
+    const pot = (probs.pav || 0) + (probs.bb || 0);
+    if (pot >= 35) return [2, 3, 4, 5]; // Acelerador com alto potencial → Ter+Qua+Qui+Sex
+    return [4, 5]; // Acelerador padrão → Qui+Sex (agenda Yves)
+  }
+
+  // Reunião de Treino — prioridade baixa, mas não desperdiça a conversão
+  if (rec === 'REUNIÃO DE TREINO') {
+    return (probs.acel || 0) >= 40 ? [1, 4] : [1]; // Seg+Qui ou só Seg
+  }
+
+  // Fallback — mostra tudo
+  return [1, 2, 3, 4, 5];
 }
 
 function renderWeek() {
@@ -1983,26 +2203,31 @@ function renderWeek() {
   const hoje = new Date();
   hoje.setHours(0,0,0,0);
 
-  // Encontrar a próxima terça (dia do workshop)
+  // ── Dias prioritários conforme diagnóstico ──
+  const diasSemana = getDiasCalendario(result); // ex: [2,3] = Ter+Qua
+
+  // Encontrar a próxima terça (ancoragem) — a janela começa sempre de Ter
   function proximaTerca(base) {
     const d = new Date(base);
-    const diff = (2 - d.getDay() + 7) % 7 || 7; // próxima terça
+    const diff = (2 - d.getDay() + 7) % 7 || 7;
     d.setDate(d.getDate() + diff);
     return d;
   }
-
   const terca = proximaTerca(hoje);
 
-  // Janela: terça + quarta + quinta + sexta + segunda seguinte = 5 dias
+  // Monta os dias concretos a partir dos números da semana (1=Seg,...,5=Sex)
+  // Sempre parte da semana da próxima terça para manter consistência
   const diasMostrar = [];
-  const offsetDias = [0, 1, 2, 3, 6]; // ter, qua, qui, sex, seg
-  offsetDias.forEach(off => {
-    const d = new Date(terca);
-    d.setDate(terca.getDate() + off);
+  const inicioSemana = new Date(terca); // a semana começa na terça do workshop
+  inicioSemana.setDate(terca.getDate() - 1); // recua para segunda dessa semana
+
+  diasSemana.forEach(dow => { // dow: 1=Seg,2=Ter,3=Qua,4=Qui,5=Sex
+    const d = new Date(inicioSemana);
+    d.setDate(inicioSemana.getDate() + dow); // Seg+1=Ter, Seg+2=Qua…
     diasMostrar.push(d);
   });
 
-  // ── Bloqueio fixo: toda quarta de manhã é bloqueada para os 3 (Marcelo/Eduardo/Yves) ──
+  // ── Bloqueio fixo: toda quarta de manhã é bloqueada para os 3 ──
   function isBloqueioQuartaManha(dt, h) {
     if (!CONFIG.bloqueio_quarta_manha) return false;
     const dow = dt.getDay();
@@ -2010,12 +2235,17 @@ function renderWeek() {
     return dow === 3 && hora < 12;
   }
 
-  // ── Disponibilidade real: se a agenda do responsável já foi carregada via Google
-  //    Calendar, bloqueia o slot se ele estiver ocupado. Se a agenda ainda não foi
-  //    carregada (sem token), não bloqueia — mostra tudo livre até conectar.
-  function isOcupadoNaAgendaReal(dt, h) {
-    return pessoaOcupada(pessoa, dt, h);
+  // ── Bloqueio de almoço: Seg / Qua / Sex → 12:00 bloqueado (12h–14:30) ──
+  // Slot 12:00 (12:00→13:30) cai dentro da janela de almoço → bloqueado
+  // Slot 14:30 (14:30→16:00) começa quando o almoço termina → LIVRE
+  function isBloqueioAlmoco(dt, h) {
+    const dow = dt.getDay(); // 1=Seg, 3=Qua, 5=Sex
+    if (dow !== 1 && dow !== 3 && dow !== 5) return false;
+    const [hh, mm] = h.split(':').map(Number);
+    return hh === 12 && mm === 0; // apenas 12:00 bloqueado
   }
+
+  // Disponibilidade via pessoaTemSlot() — slots com 'AGENDAR REUNIÃO AQUI'
 
   if (btnPrev) btnPrev.style.display = 'none'; // sem navegação — janela fixa
   if (btnNext) btnNext.style.display = 'none';
@@ -2032,17 +2262,19 @@ function renderWeek() {
     col.className = 'day-col';
 
     const dow = dt.getDay();
-    const isTerca = dow === 2;
+    const isTerca  = dow === 2;
     const isQuarta = dow === 3;
+    // Primeiro dia da lista = melhor slot para esse diagnóstico
+    const isPrimeiro = diasMostrar.indexOf(dt) === 0;
 
     const nomeDia = dt.toLocaleDateString('pt-BR', {weekday:'short'}).replace('.','').toUpperCase();
     const numDia  = dt.toLocaleDateString('pt-BR', {day:'2-digit', month:'2-digit'});
 
-    // Cabeçalho
+    // Cabeçalho — destaca o PRIMEIRO dia da lista (melhor para o produto)
     const hdr = document.createElement('div');
-    hdr.className = 'day-hdr' + (isTerca ? ' day-hdr-destaque' : '') + (isQuarta ? ' day-hdr-lotado' : '');
+    hdr.className = 'day-hdr' + (isPrimeiro ? ' day-hdr-destaque' : '') + (isQuarta && !isPrimeiro ? ' day-hdr-lotado' : '');
 
-    if (isTerca) {
+    if (isPrimeiro) {
       hdr.innerHTML =
         '<div class="day-name">' + nomeDia + '</div>' +
         '<div class="day-num">' + numDia + '</div>' +
@@ -2076,22 +2308,29 @@ function renderWeek() {
       lastPeriod = period;
 
       const iso   = dt.toISOString().slice(0,10) + 'T' + h + ':00';
-      const label = dt.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'}) + ' às ' + h;
+      const label = dt.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'}) + ' às ' + h + ' (1h30)';
       const btn   = document.createElement('button');
 
-      const bloqueadoFixo = isBloqueioQuartaManha(dt, h);
-      const ocupadoReal   = !bloqueadoFixo && isOcupadoNaAgendaReal(dt, h);
-      const reservado = bloqueadoFixo || ocupadoReal;
+      // Slot disponível SOMENTE se tiver evento "AGENDAR REUNIÃO AQUI" ou hora livre
+      const bloqueadoFixo  = isBloqueioQuartaManha(dt, h) || isBloqueioAlmoco(dt, h);
+      const temSlotLivre   = !bloqueadoFixo && pessoaTemSlot(pessoa, dt, h);
+      const slotEvento     = temSlotLivre ? getSlotEvento(pessoa, dt, h) : null;
 
-      if (reservado) {
+      if (!temSlotLivre) {
+        // Não há evento "AGENDAR REUNIÃO AQUI" → slot ocupado ou não disponível
         btn.className = 'slot slot-reservado';
         btn.textContent = h;
         btn.disabled = true;
-        btn.title = bloqueadoFixo ? 'Manhã de quarta — bloqueada para toda a equipe' : 'Indisponível na agenda';
+        btn.title = isBloqueioAlmoco(dt, h)
+          ? 'Horário de almoço bloqueado (12h–14h30)'
+          : isBloqueioQuartaManha(dt, h)
+          ? 'Manhã de quarta — bloqueada'
+          : 'Horário não disponível neste dia';
       } else {
-        btn.className = 'slot' + (slotSel && slotSel.iso === iso ? ' selected' : '') + (isTerca ? ' slot-destaque' : '');
+        const eventoId = slotEvento ? slotEvento.id : null;
+        btn.className = 'slot' + (slotSel && slotSel.iso === iso ? ' selected' : '') + (isPrimeiro ? ' slot-destaque' : '');
         btn.textContent = h;
-        btn.onclick = () => selectSlot(iso, label, btn, pessoa);
+        btn.onclick = () => selectSlot(iso, label, btn, pessoa, eventoId);
       }
 
       slotsWrap.appendChild(btn);
@@ -2107,8 +2346,13 @@ function shiftWeek(dir) {
   renderWeek();
 }
 
-function selectSlot(iso, label, btn, pessoa) {
-  slotSel = { iso, label, pessoa: pessoa || (leadData.result && leadData.result.responsavel && leadData.result.responsavel.pessoa) };
+function selectSlot(iso, label, btn, pessoa, eventoId) {
+  slotSel = {
+    iso,
+    label,
+    pessoa:   pessoa || (leadData.result && leadData.result.responsavel && leadData.result.responsavel.pessoa),
+    eventoId: eventoId || null, // ID do evento "AGENDAR REUNIÃO AQUI" para PATCH
+  };
   document.querySelectorAll('.slot').forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
 
@@ -2119,7 +2363,8 @@ function selectSlot(iso, label, btn, pessoa) {
   if (previewMain) previewMain.textContent = label;
   if (previewSub) {
     const nomes = { marcelo: 'Marcelo', eduardo: 'Eduardo Lustosa', yves: 'Yves' };
-    previewSub.textContent = 'Reunião de 1 hora · Google Meet · com ' + (nomes[slotSel.pessoa] || 'GFB');
+
+    previewSub.textContent = 'Reunião de 1h30 · Google Meet · com ' + (nomes[slotSel.pessoa] || 'GFB');
   }
 
   const btnNext = document.getElementById('btn-cal-next');
@@ -2198,7 +2443,8 @@ function gerarRelatorioTexto() {
   }
   linhas.push('');
   linhas.push('Gerado automaticamente em ' + new Date().toLocaleString('pt-BR'));
-  return linhas.join('\n');
+  return linhas.join('\
+');
 }
 
 function renderConfirm() {
@@ -2249,6 +2495,7 @@ async function confirmar() {
   if (det) {
     const resp  = (leadData.result && leadData.result.responsavel) || decidirResponsavel(leadData.result || {});
     const nomes = { marcelo: 'Marcelo', eduardo: 'Eduardo Lustosa', yves: 'Yves' };
+
     det.innerHTML =
       '📅 ' + (slotSel ? slotSel.label : '—') + '<br>' +
       '👤 ' + (leadData.nome || '') + '<br>' +
@@ -2357,7 +2604,13 @@ async function enviarWebhook() {
   // ── 2. GOOGLE CALENDAR — cria o evento real na agenda do responsável ──
   if (slotSel && gcalToken) {
     try {
-      const ev = await criarEventoGoogleCalendar(slotSel.pessoa || resp.pessoa, slotSel);
+      // Reserva o slot: PATCH se tiver ID de "AGENDAR REUNIÃO AQUI", POST no fallback
+      const pessoaFinal = slotSel.pessoa || resp.pessoa;
+      const slotObj = slotSel.eventoId
+        ? { id: slotSel.eventoId, iso: slotSel.iso }
+        : (getSlotEvento(pessoaFinal, new Date(slotSel.iso), new Date(slotSel.iso).toTimeString().slice(0,5))
+           || { id: null, iso: slotSel.iso }); // fallback: cria novo evento
+      const ev = await reservarSlotNoCalendario(pessoaFinal, slotObj);
       if (ev && ev.htmlLink) payload.google_event_link = ev.htmlLink;
     } catch(e) { console.warn('Google Calendar error:', e); }
   }
@@ -2367,9 +2620,13 @@ async function enviarWebhook() {
   if (CONFIG.rd_token && CONFIG.rd_token !== 'COLE_SEU_TOKEN_RD_STATION') {
     try {
       const nomes = { marcelo: 'Marcelo', eduardo: 'Eduardo Lustosa', yves: 'Yves' };
+
       const descricao =
-        '📅 Reunião agendada: ' + (slotSel ? slotSel.label : '—') + '\n' +
-        '🧑‍💼 Responsável: ' + (nomes[resp.pessoa] || resp.pessoa) + '\n\n' +
+        '📅 Reunião agendada: ' + (slotSel ? slotSel.label : '—') + '\
+' +
+        '🧑‍💼 Responsável: ' + (nomes[resp.pessoa] || resp.pessoa) + '\
+\
+' +
         relatorio;
 
       const rdBody = {
