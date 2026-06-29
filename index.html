@@ -857,19 +857,19 @@ body{
           <div>
             <label class="pf-label">Selecione a opção que te define *</label>
             <div class="perfis-wrap" id="perfis-wrap">
-              <button type="button" class="perfil-opt" onclick="selPerfil(this,'Dono de academia')">
+              <button class="perfil-opt" onclick="selPerfil(this,'Dono de academia')">
                 <span class="perfil-dot"><span class="perfil-dot-inner"></span></span>Dono de academia
               </button>
-              <button type="button" class="perfil-opt" onclick="selPerfil(this,'Dono de studio')">
+              <button class="perfil-opt" onclick="selPerfil(this,'Dono de studio')">
                 <span class="perfil-dot"><span class="perfil-dot-inner"></span></span>Dono de studio
               </button>
-              <button type="button" class="perfil-opt" onclick="selPerfil(this,'Gerente / Gestor')">
+              <button class="perfil-opt" onclick="selPerfil(this,'Gerente / Gestor')">
                 <span class="perfil-dot"><span class="perfil-dot-inner"></span></span>Gerente / Gestor
               </button>
-              <button type="button" class="perfil-opt" onclick="selPerfil(this,'Franqueado')">
+              <button class="perfil-opt" onclick="selPerfil(this,'Franqueado')">
                 <span class="perfil-dot"><span class="perfil-dot-inner"></span></span>Franqueado
               </button>
-              <button type="button" class="perfil-opt" onclick="selPerfil(this,'Outro')">
+              <button class="perfil-opt" onclick="selPerfil(this,'Outro')">
                 <span class="perfil-dot"><span class="perfil-dot-inner"></span></span>Outro
               </button>
             </div>
@@ -884,7 +884,7 @@ body{
           </div>
 
           <!-- CTA -->
-          <button type="button" class="cta-btn" onclick="goQual()">Enviar  →</button>
+          <button class="cta-btn" onclick="goQual()">Enviar  →</button>
           <div class="cta-trust"><span>🔒</span> Seus dados estão seguros e não serão compartilhados.</div>
         </div>
       </div>
@@ -917,8 +917,8 @@ body{
       <div class="note-lbl">ANOTE — DESCRIÇÃO DO NEGÓCIO</div>
       <textarea class="q-textarea" id="q1-negocio" rows="4" placeholder="Ex: Academia de 5 anos, 400 alunos, foco em musculação, ticket médio R$120, 3 funcionários..."></textarea>
       <div class="q-nav">
-        <button type="button" class="btn-back" onclick="goStep('step1')">← Voltar</button>
-        <button type="button" class="btn-next" id="next-q1" onclick="goQ(2)" disabled>Próximo →</button>
+        <button class="btn-back" onclick="goStep('step1')">← Voltar</button>
+        <button class="btn-next" id="next-q1" onclick="goQ(2)" disabled>Próximo →</button>
       </div>
     </div>
 
@@ -933,15 +933,15 @@ body{
       </div>
       <div class="note-lbl" style="margin-top:4px">MARGEM DE LUCRO (%)</div>
       <div class="opts" style="margin-top:8px">
-        <button type="button" class="opt-btn warn-opt" data-q="margem" data-v="lt10" onclick="selQ(this)">Abaixo de 10% — margem muito baixa<span class="check">✓</span></button>
-        <button type="button" class="opt-btn" data-q="margem" data-v="10to20" onclick="selQ(this)">10% a 20%<span class="check">✓</span></button>
-        <button type="button" class="opt-btn" data-q="margem" data-v="20to30" onclick="selQ(this)">20% a 30%<span class="check">✓</span></button>
-        <button type="button" class="opt-btn" data-q="margem" data-v="30to40" onclick="selQ(this)">30% a 40%<span class="check">✓</span></button>
-        <button type="button" class="opt-btn" data-q="margem" data-v="gt40" onclick="selQ(this)">Acima de 40% — margem excelente<span class="check">✓</span></button>
+        <button class="opt-btn warn-opt" data-q="margem" data-v="lt10" onclick="selQ(this)">Abaixo de 10% — margem muito baixa<span class="check">✓</span></button>
+        <button class="opt-btn" data-q="margem" data-v="10to20" onclick="selQ(this)">10% a 20%<span class="check">✓</span></button>
+        <button class="opt-btn" data-q="margem" data-v="20to30" onclick="selQ(this)">20% a 30%<span class="check">✓</span></button>
+        <button class="opt-btn" data-q="margem" data-v="30to40" onclick="selQ(this)">30% a 40%<span class="check">✓</span></button>
+        <button class="opt-btn" data-q="margem" data-v="gt40" onclick="selQ(this)">Acima de 40% — margem excelente<span class="check">✓</span></button>
       </div>
       <div class="q-nav">
-        <button type="button" class="btn-back" onclick="goQ(1)">← Voltar</button>
-        <button type="button" class="btn-next" id="next-q2" onclick="goQ(3)" disabled>Próximo →</button>
+        <button class="btn-back" onclick="goQ(1)">← Voltar</button>
+        <button class="btn-next" id="next-q2" onclick="goQ(3)" disabled>Próximo →</button>
       </div>
     </div>
 
@@ -956,8 +956,8 @@ body{
       </div>
       <div class="note-lbl" style="margin-top:4px">SITUAÇÃO FINANCEIRA</div>
       <div class="opts-2col" style="margin-top:8px">
-        <button type="button" class="opt-btn opt-2col" data-q="situacao" data-v="sobra" onclick="selSituacao(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">Sobra / Sem dívidas</span><span class="check">✓</span></button>
-        <button type="button" class="opt-btn opt-2col warn-opt" data-q="situacao" data-v="endividado" onclick="selSituacao(this)"><span style="font-size:22px">⚠️</span><span style="font-size:13px;font-weight:600">Tem endividamento</span><span class="check">✓</span></button>
+        <button class="opt-btn opt-2col" data-q="situacao" data-v="sobra" onclick="selSituacao(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">Sobra / Sem dívidas</span><span class="check">✓</span></button>
+        <button class="opt-btn opt-2col warn-opt" data-q="situacao" data-v="endividado" onclick="selSituacao(this)"><span style="font-size:22px">⚠️</span><span style="font-size:13px;font-weight:600">Tem endividamento</span><span class="check">✓</span></button>
       </div>
       <div class="cond-block" id="bloco-fluxo">
         <div class="script-box">
@@ -966,8 +966,8 @@ body{
         </div>
         <div class="note-lbl">FLUXO DE CAIXA</div>
         <div class="opts-2col" style="margin-top:8px">
-          <button type="button" class="opt-btn opt-2col" data-q="fluxo" data-v="positivo" onclick="selFluxo(this)"><span style="font-size:22px">📈</span><span style="font-size:13px;font-weight:600">Positivo (lucro)</span><span class="check">✓</span></button>
-          <button type="button" class="opt-btn opt-2col danger-opt" data-q="fluxo" data-v="negativo" onclick="selFluxo(this)"><span style="font-size:22px">📉</span><span style="font-size:13px;font-weight:600">Negativo (prejuízo)</span><span class="check">✓</span></button>
+          <button class="opt-btn opt-2col" data-q="fluxo" data-v="positivo" onclick="selFluxo(this)"><span style="font-size:22px">📈</span><span style="font-size:13px;font-weight:600">Positivo (lucro)</span><span class="check">✓</span></button>
+          <button class="opt-btn opt-2col danger-opt" data-q="fluxo" data-v="negativo" onclick="selFluxo(this)"><span style="font-size:22px">📉</span><span style="font-size:13px;font-weight:600">Negativo (prejuízo)</span><span class="check">✓</span></button>
         </div>
       </div>
       <div class="cond-block" id="bloco-reserva">
@@ -977,13 +977,13 @@ body{
         </div>
         <div class="note-lbl">TEM FUNDO DE RESERVA?</div>
         <div class="opts-2col" style="margin-top:8px">
-          <button type="button" class="opt-btn opt-2col" data-q="reserva" data-v="sim" onclick="selReserva(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">Sim, tem reserva</span><span class="check">✓</span></button>
-          <button type="button" class="opt-btn opt-2col danger-opt" data-q="reserva" data-v="nao" onclick="selReserva(this)"><span style="font-size:22px">🚨</span><span style="font-size:13px;font-weight:600">Não tem reserva</span><span class="check">✓</span></button>
+          <button class="opt-btn opt-2col" data-q="reserva" data-v="sim" onclick="selReserva(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">Sim, tem reserva</span><span class="check">✓</span></button>
+          <button class="opt-btn opt-2col danger-opt" data-q="reserva" data-v="nao" onclick="selReserva(this)"><span style="font-size:22px">🚨</span><span style="font-size:13px;font-weight:600">Não tem reserva</span><span class="check">✓</span></button>
         </div>
       </div>
       <div class="q-nav">
-        <button type="button" class="btn-back" onclick="goQ(2)">← Voltar</button>
-        <button type="button" class="btn-next" id="next-q3" onclick="goQ(4)" disabled>Próximo →</button>
+        <button class="btn-back" onclick="goQ(2)">← Voltar</button>
+        <button class="btn-next" id="next-q3" onclick="goQ(4)" disabled>Próximo →</button>
       </div>
     </div>
 
@@ -997,16 +997,16 @@ body{
         <p>Hoje, qual você considera que é o seu maior desafio em vendas e crescimento de alunos que está impedindo sua empresa de avançar?</p>
       </div>
       <div class="opts">
-        <button type="button" class="opt-btn" data-q="desafio" data-v="matriculas" onclick="selQ(this)"><span class="opt-icon">🎯</span>Aumentar matrículas e reter mais alunos<span class="check">✓</span></button>
-        <button type="button" class="opt-btn" data-q="desafio" data-v="time" onclick="selQ(this)"><span class="opt-icon">👥</span>Fazer meu time de vendas performar melhor<span class="check">✓</span></button>
-        <button type="button" class="opt-btn" data-q="desafio" data-v="expandir" onclick="selQ(this)"><span class="opt-icon">📍</span>Padronizar e expandir para novas unidades<span class="check">✓</span></button>
-        <button type="button" class="opt-btn" data-q="desafio" data-v="margem" onclick="selQ(this)"><span class="opt-icon">💹</span>Melhorar minha margem e lucratividade<span class="check">✓</span></button>
+        <button class="opt-btn" data-q="desafio" data-v="matriculas" onclick="selQ(this)"><span class="opt-icon">🎯</span>Aumentar matrículas e reter mais alunos<span class="check">✓</span></button>
+        <button class="opt-btn" data-q="desafio" data-v="time" onclick="selQ(this)"><span class="opt-icon">👥</span>Fazer meu time de vendas performar melhor<span class="check">✓</span></button>
+        <button class="opt-btn" data-q="desafio" data-v="expandir" onclick="selQ(this)"><span class="opt-icon">📍</span>Padronizar e expandir para novas unidades<span class="check">✓</span></button>
+        <button class="opt-btn" data-q="desafio" data-v="margem" onclick="selQ(this)"><span class="opt-icon">💹</span>Melhorar minha margem e lucratividade<span class="check">✓</span></button>
       </div>
       <div class="note-lbl">ANOTE — MAIOR DESAFIO RELATADO</div>
       <textarea class="q-textarea" id="q4-nota" rows="3" placeholder="Ex: Muita evasão, pouca captação, equipe sem processo de vendas..."></textarea>
       <div class="q-nav">
-        <button type="button" class="btn-back" onclick="goQ(3)">← Voltar</button>
-        <button type="button" class="btn-next" id="next-q4" onclick="goQ(5)" disabled>Próximo →</button>
+        <button class="btn-back" onclick="goQ(3)">← Voltar</button>
+        <button class="btn-next" id="next-q4" onclick="goQ(5)" disabled>Próximo →</button>
       </div>
     </div>
 
@@ -1022,8 +1022,8 @@ body{
       <div class="note-lbl">ANOTE — DOR OCULTA / MOTIVO REAL</div>
       <textarea class="q-textarea" id="q5-dor" rows="4" placeholder="Ex: Quer provar para a família que conseguiu, quer viajar mais com os filhos, está acumulado de dívidas..."></textarea>
       <div class="q-nav">
-        <button type="button" class="btn-back" onclick="goQ(4)">← Voltar</button>
-        <button type="button" class="btn-next" onclick="goQ(6)">Próximo →</button>
+        <button class="btn-back" onclick="goQ(4)">← Voltar</button>
+        <button class="btn-next" onclick="goQ(6)">Próximo →</button>
       </div>
     </div>
 
@@ -1039,8 +1039,8 @@ body{
       <div class="info-box">🚨 Nosso time só realiza <strong>uma única reunião</strong>. É fundamental que TODOS os decisores estejam presentes. Se vier sozinho e precisar "consultar o sócio depois", a reunião será perdida. Não agende sem confirmar isso.</div>
       <div class="note-lbl">SITUAÇÃO DO DECISOR</div>
       <div class="opts-2col" style="margin-top:8px">
-        <button type="button" class="opt-btn opt-2col" data-q="decisor_tipo" data-v="unico" onclick="selDecisor(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">É o único decisor</span><span class="check">✓</span></button>
-        <button type="button" class="opt-btn opt-2col warn-opt" data-q="decisor_tipo" data-v="consultar" onclick="selDecisor(this)"><span style="font-size:22px">👥</span><span style="font-size:13px;font-weight:600">Precisa consultar alguém</span><span class="check">✓</span></button>
+        <button class="opt-btn opt-2col" data-q="decisor_tipo" data-v="unico" onclick="selDecisor(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">É o único decisor</span><span class="check">✓</span></button>
+        <button class="opt-btn opt-2col warn-opt" data-q="decisor_tipo" data-v="consultar" onclick="selDecisor(this)"><span style="font-size:22px">👥</span><span style="font-size:13px;font-weight:600">Precisa consultar alguém</span><span class="check">✓</span></button>
       </div>
       <div class="cond-block" id="bloco-unico">
         <div class="script-box">
@@ -1049,8 +1049,8 @@ body{
         </div>
         <div class="note-lbl">É CASADO?</div>
         <div class="opts-2col" style="margin-top:8px">
-          <button type="button" class="opt-btn opt-2col" data-q="casado" data-v="sim" onclick="selCasado(this)"><span style="font-size:22px">💑</span><span style="font-size:13px;font-weight:600">Sim, casado(a)</span><span class="check">✓</span></button>
-          <button type="button" class="opt-btn opt-2col" data-q="casado" data-v="nao" onclick="selCasado(this)"><span style="font-size:22px">🧑</span><span style="font-size:13px;font-weight:600">Não / Solteiro(a)</span><span class="check">✓</span></button>
+          <button class="opt-btn opt-2col" data-q="casado" data-v="sim" onclick="selCasado(this)"><span style="font-size:22px">💑</span><span style="font-size:13px;font-weight:600">Sim, casado(a)</span><span class="check">✓</span></button>
+          <button class="opt-btn opt-2col" data-q="casado" data-v="nao" onclick="selCasado(this)"><span style="font-size:22px">🧑</span><span style="font-size:13px;font-weight:600">Não / Solteiro(a)</span><span class="check">✓</span></button>
         </div>
       </div>
       <div class="cond-block" id="bloco-consultar">
@@ -1060,14 +1060,14 @@ body{
         </div>
         <div class="note-lbl">O OUTRO DECISOR CONFIRMOU PRESENÇA?</div>
         <div class="opts-2col" style="margin-top:8px">
-          <button type="button" class="opt-btn opt-2col" data-q="decisor_confirmou" data-v="confirmou" onclick="selDecisorConf(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">Confirmou que virá</span><span class="check">✓</span></button>
-          <button type="button" class="opt-btn opt-2col warn-opt" data-q="decisor_confirmou" data-v="nao_confirmou" onclick="selDecisorConf(this)"><span style="font-size:22px">⚠️</span><span style="font-size:13px;font-weight:600">Não confirmou, mas gostaria de pré agendar e alinhar com ele para não perder a vaga.</span><span class="check">✓</span></button>
+          <button class="opt-btn opt-2col" data-q="decisor_confirmou" data-v="confirmou" onclick="selDecisorConf(this)"><span style="font-size:22px">✅</span><span style="font-size:13px;font-weight:600">Confirmou que virá</span><span class="check">✓</span></button>
+          <button class="opt-btn opt-2col warn-opt" data-q="decisor_confirmou" data-v="nao_confirmou" onclick="selDecisorConf(this)"><span style="font-size:22px">⚠️</span><span style="font-size:13px;font-weight:600">Não confirmou, mas gostaria de pré agendar e alinhar com ele para não perder a vaga.</span><span class="check">✓</span></button>
         </div>
         <div class="danger-box" id="aviso-decisor" style="display:none">🚨 É de extrema importância garantir o comparecimento do seu sócio para que a reunião ocorra.</div>
       </div>
       <div class="q-nav">
-        <button type="button" class="btn-back" onclick="goQ(5)">← Voltar</button>
-        <button type="button" class="btn-next" id="next-q6" onclick="goQ(7)" disabled>Próximo →</button>
+        <button class="btn-back" onclick="goQ(5)">← Voltar</button>
+        <button class="btn-next" id="next-q6" onclick="goQ(7)" disabled>Próximo →</button>
       </div>
     </div>
 
@@ -1083,14 +1083,14 @@ body{
 
       <div class="note-lbl">URGÊNCIA DECLARADA PELO LEAD</div>
       <div class="opts" style="margin-top:8px">
-        <button type="button" class="opt-btn" data-q="urgencia" data-v="agora" onclick="selQ(this)"><span class="opt-icon">🔥</span>Urgente — agora<span class="check">✓</span></button>
-        <button type="button" class="opt-btn" data-q="urgencia" data-v="6meses" onclick="selQ(this)"><span class="opt-icon">📅</span>Próximos 6 meses<span class="check">✓</span></button>
-        <button type="button" class="opt-btn warn-opt" data-q="urgencia" data-v="1ano" onclick="selQ(this)"><span class="opt-icon">🕐</span>1 ano ou mais<span class="check">✓</span></button>
+        <button class="opt-btn" data-q="urgencia" data-v="agora" onclick="selQ(this)"><span class="opt-icon">🔥</span>Urgente — agora<span class="check">✓</span></button>
+        <button class="opt-btn" data-q="urgencia" data-v="6meses" onclick="selQ(this)"><span class="opt-icon">📅</span>Próximos 6 meses<span class="check">✓</span></button>
+        <button class="opt-btn warn-opt" data-q="urgencia" data-v="1ano" onclick="selQ(this)"><span class="opt-icon">🕐</span>1 ano ou mais<span class="check">✓</span></button>
       </div>
       <div class="warn-box" id="warn-baixa-urg" style="display:none">⚠️ <strong>Cautela máxima.</strong> Considere não agendar ou qualificar como Reunião de Treino.</div>
       <div class="q-nav">
-        <button type="button" class="btn-back" onclick="goQ(6)">← Voltar</button>
-        <button type="button" class="btn-next diagnose" id="next-q7" onclick="finishQual()" disabled>Ver Diagnóstico Final →</button>
+        <button class="btn-back" onclick="goQ(6)">← Voltar</button>
+        <button class="btn-next diagnose" id="next-q7" onclick="finishQual()" disabled>Ver Diagnóstico Final →</button>
       </div>
     </div>
 
@@ -1108,9 +1108,9 @@ body{
       <div class="day-hint" id="cal-day-hint"></div>
       <div class="cal-resp-row" id="cal-resp-row" style="display:flex;gap:8px;align-items:center;margin-bottom:14px;font-size:12px;color:#8d968d;flex-wrap:wrap"></div>
       <div class="cal-nav-row">
-        <button type="button" class="cal-arrow" id="btn-prev" onclick="shiftWeek(-1)" disabled>‹</button>
+        <button class="cal-arrow" id="btn-prev" onclick="shiftWeek(-1)" disabled>‹</button>
         <span class="cal-title" id="cal-range"></span>
-        <button type="button" class="cal-arrow" id="btn-next" onclick="shiftWeek(1)">›</button>
+        <button class="cal-arrow" id="btn-next" onclick="shiftWeek(1)">›</button>
       </div>
       <div class="days-grid" id="days-grid"></div>
       <div class="cal-loading" id="cal-loading" style="display:none;text-align:center;padding:20px;color:#8d968d;font-size:13px">⏳ Carregando disponibilidade das agendas...</div>
@@ -1119,12 +1119,12 @@ body{
         <div>
           <div class="slot-preview-main" id="slot-preview-main">—</div>
           <div class="slot-preview-sub" id="slot-preview-sub">Reunião de 1h30 · Google Meet</div>
-          <button type="button" class="slot-change" onclick="clearSlot()">Trocar horário</button>
+          <button class="slot-change" onclick="clearSlot()">Trocar horário</button>
         </div>
       </div>
     </div>
-    <button type="button" class="btn-primary" id="btn-cal-next" onclick="goStep('step4')" disabled>Continuar →</button>
-    <button type="button" class="btn-secondary" onclick="goStep('step2');goQ(7)">← Voltar</button>
+    <button class="btn-primary" id="btn-cal-next" onclick="goStep('step4')" disabled>Continuar →</button>
+    <button class="btn-secondary" onclick="goStep('step2');goQ(7)">← Voltar</button>
   </div>
 </div>
 
@@ -1137,7 +1137,7 @@ body{
       <div style="font-size:48px;margin-bottom:16px">📋</div>
       <div style="font-size:20px;font-weight:800;margin-bottom:8px">Quase lá!</div>
       <p style="font-size:14px;color:#8d968d;line-height:1.65;margin-bottom:24px">Recebemos seus dados. Nossa equipe vai analisar seu perfil e entrar em contato pelo WhatsApp em breve.</p>
-      <button type="button" class="btn-primary" id="btn-nq-confirm" onclick="confirmarNQ()" style="max-width:300px;margin:0 auto">
+      <button class="btn-primary" id="btn-nq-confirm" onclick="confirmarNQ()" style="max-width:300px;margin:0 auto">
         <span id="nq-txt">✅ Confirmar interesse</span>
       </button>
     </div>
@@ -1155,11 +1155,11 @@ body{
       <div id="confirm-rows"></div>
     </div>
     <div class="decisor-warn-box" id="decisor-warn" style="display:none">👥 <strong>Lembrete:</strong> Confirme que todos os decisores (sócio, cônjuge, financeiro) estarão presentes. Nosso time realiza apenas <strong>uma única reunião</strong> por empresa.</div>
-    <div class="notice-box">📌 <strong>Após confirmar:</strong> você receberá a confirmação no WhatsApp com o link do Google Meet. Nossa reunião será de <strong>1 hora</strong>. Ao final decidimos juntos se faz sentido avançar.</div>
-    <button type="button" class="btn-primary" id="btn-confirmar" onclick="confirmar()">
+    <div class="notice-box">📌 <strong>Após confirmar:</strong> você receberá a confirmação no WhatsApp com o link do Google Meet. Nossa reunião será de <strong>1h30</strong>. Ao final decidimos juntos se faz sentido avançar.</div>
+    <button class="btn-primary" id="btn-confirmar" onclick="confirmar()">
       <span id="confirmar-txt">🎯 Confirmar Agendamento</span>
     </button>
-    <button type="button" class="btn-secondary" onclick="goStep('step3')">← Voltar</button>
+    <button class="btn-secondary" onclick="goStep('step3')">← Voltar</button>
   </div>
 </div>
 
@@ -1223,7 +1223,7 @@ const CONFIG = {
   // 5. Cole o Client ID abaixo. Não precisa de Client Secret (fluxo é 100% client-side).
   // ── Google Apps Script — cria evento direto nas agendas (sem N8N, sem OAuth) ──
   // Após fazer o deploy do Apps Script, cole a URL aqui:
-  apps_script_url: "https://script.google.com/macros/s/AKfycbx4TyyQHBz7YUXeFZgLeeByRAM97jsAu-YnBmsHhsDA0Yxxefgts81agFNPO_qotZjrjQ/exec",
+  apps_script_url: "COLE_URL_DO_APPS_SCRIPT",
 
   google_client_id:        "",  // não necessário com Apps Script
 
@@ -1277,7 +1277,7 @@ const CONFIG = {
    │  Treino / Outro  │ Yves                                 │
    └─────────────────────────────────────────────────────────┘
 ══════════════════════════════════════════════════ */
-// agendaCache declarado na seção de disponibilidade (abaixo)
+let agendaCache = { marcelo: null, eduardo: null, yves: null, fetchedAt: null };
 
 function decidirResponsavel(result) {
   const rec = (result && result.rec) || '';
@@ -1318,134 +1318,278 @@ function decidirResponsavel(result) {
   };
 }
 
-/* Verifica se Eduardo está "atolado" (agenda cheia nos próximos N dias úteis) */
-function checarAtolado(pessoa) {
-  const cal = agendaCache[pessoa];
-  if (!cal || !cal.eventosPorDia) return false; // sem dados → assume livre
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  let diasUteisChecados = 0;
-  for (let i = 1; diasUteisChecados < CONFIG.dias_verificar_atolado && i <= 10; i++) {
-    const d = new Date(hoje); d.setDate(hoje.getDate() + i);
-    if (d.getDay() === 0 || d.getDay() === 6) continue;
-    diasUteisChecados++;
-    const key = d.toISOString().slice(0, 10);
-    if ((cal.eventosPorDia[key] || 0) >= CONFIG.atolado_min_reunioes) return true;
+// checarAtolado + checarSlotMarcelo → definidas na seção Google Calendar abaixo
+
+/* ══════════════════════════════════════════════════
+   GOOGLE CALENDAR — LOGIN + SLOTS "AGENDAR REUNIÃO AQUI"
+   ─────────────────────────────────────────────────
+   LÓGICA:
+   • Os consultores bloqueiam horários disponíveis criando eventos chamados
+     exatamente "AGENDAR REUNIÃO AQUI" em suas agendas.
+   • O form busca esses eventos e mostra APENAS esses horários no calendário.
+   • Quando o lead confirma, fazemos PATCH no evento existente (sem criar novo),
+     substituindo o título e adicionando os dados da reunião.
+   • Slots sem "AGENDAR REUNIÃO AQUI" são tratados como ocupados/indisponíveis.
+══════════════════════════════════════════════════ */
+
+const SLOT_LIVRE_TITULO = 'AGENDAR REUNIÃO AQUI'; // exato, case-insensitive
+
+let gcalToken        = null;
+let gcalTokenClient  = null;
+
+function initGoogleAuth() {
+  if (!window.google || !google.accounts || !google.accounts.oauth2) {
+    setTimeout(initGoogleAuth, 300);
+    return;
   }
-  return false;
+  gcalTokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: CONFIG.google_client_id,
+    scope: 'https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly',
+    callback: (resp) => {
+      if (resp && resp.access_token) {
+        gcalToken = resp.access_token;
+        carregarAgendasReais();
+      }
+    },
+  });
 }
 
-/* Verifica se Maicon ainda tem o slot de backup PAV disponível.
-   Ele aceita somente CONFIG.marcelo_max_pav_slots reunião(ões) como backup.
-   Conta todos os eventos na janela — se já atingiu o limite, overflow vai pro Yves. */
-function checarSlotMarcelo() {
-  const cal = agendaCache.marcelo;
-  if (!cal || !cal.eventosPorDia) return true; // sem dados → assume slot disponível
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  let total = 0;
-  for (let i = 1; i <= CONFIG.janela_dias; i++) {
-    const d = new Date(hoje); d.setDate(hoje.getDate() + i);
-    const key = d.toISOString().slice(0, 10);
-    total += cal.eventosPorDia[key] || 0;
-  }
-  return total < CONFIG.marcelo_max_pav_slots;
+function conectarGoogleCalendar() {
+  if (!gcalTokenClient) { initGoogleAuth(); setTimeout(conectarGoogleCalendar, 500); return; }
+  gcalTokenClient.requestAccessToken();
+}
+
+async function buscarEventos(emailAgenda, fromISO, toISO) {
+  const url = 'https://www.googleapis.com/calendar/v3/calendars/'
+    + encodeURIComponent(emailAgenda) + '/events'
+    + '?timeMin=' + encodeURIComponent(fromISO)
+    + '&timeMax=' + encodeURIComponent(toISO)
+    + '&singleEvents=true&orderBy=startTime&maxResults=100';
+  const r = await fetch(url, { headers: { 'Authorization': 'Bearer ' + gcalToken } });
+  if (!r.ok) throw new Error('Google Calendar HTTP ' + r.status + ' (' + emailAgenda + ')');
+  return r.json();
 }
 
 /* ══════════════════════════════════════════════════
-   DISPONIBILIDADE VIA APPS SCRIPT (sem OAuth)
+   CARREGA AGENDAS: "AGENDAR REUNIÃO AQUI" + todos os eventos
    ─────────────────────────────────────────────────
-   O Apps Script lê as agendas reais do Google Calendar
-   e retorna apenas os slots LIVRES via GET.
-   O form exibe esses slots e faz POST para criar o evento.
+   Estratégia de dois níveis:
+   1º) Slots "AGENDAR REUNIÃO AQUI" → horários pré-bloqueados pelo consultor
+   2º) Fallback: se o dia não tiver nenhum "AGENDAR REUNIÃO AQUI",
+       mostra os horários livres de 09h–17h (janelas de 1h30)
 ══════════════════════════════════════════════════ */
-
-// Cache de slots livres buscados do Apps Script
-let agendaCache = {};  // { marcelo: [{iso, label, date, hora}], ... }
-let agendaCacheLoaded = false;
-
-// Busca disponibilidade do Apps Script (GET)
 async function carregarAgendasReais() {
-  const url = CONFIG.apps_script_url;
-  if (!url || url.includes('COLE_URL')) {
-    console.warn('Apps Script URL não configurada.');
-    agendaCacheLoaded = true;
-    return;
-  }
+  if (!gcalToken) return;
   const loadingEl = document.getElementById('cal-loading');
   if (loadingEl) loadingEl.style.display = 'block';
 
-  try {
-    const r = await fetch(url, { method: 'GET' });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const data = await r.json();
-    if (data && data.slots) {
-      agendaCache = data.slots; // { marcelo: [...], eduardo: [...], yves: [...] }
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const fim  = new Date(hoje); fim.setDate(hoje.getDate() + CONFIG.janela_dias + 1);
+  const minISO = hoje.toISOString();
+  const maxISO = fim.toISOString();
+
+  for (const pessoa of ['marcelo','eduardo','yves']) {
+    try {
+      const email  = CONFIG.calendars[pessoa];
+      const dados  = await buscarEventos(email, minISO, maxISO);
+      const todos  = dados.items || [];
+
+      /* ── Slots "AGENDAR REUNIÃO AQUI" (nível 1) ── */
+      const slots = todos
+        .filter(e => (e.summary || '').trim().toUpperCase() === SLOT_LIVRE_TITULO.toUpperCase())
+        .map(e => {
+          const iso    = e.start.dateTime || e.start.date;
+          const isoFim = e.end.dateTime   || e.end.date;
+          const dt     = new Date(iso);
+          return {
+            id: e.id, iso, isoFim, dt,
+            dayKey: dt.toISOString().slice(0,10),
+            hrKey:  dt.toISOString().slice(0,13), // YYYY-MM-DDTHH
+            calEmail: email,
+          };
+        });
+
+      const porHora = new Map();
+      const porDia  = {};
+      slots.forEach(s => {
+        porHora.set(s.hrKey, s);
+        porDia[s.dayKey] = (porDia[s.dayKey] || 0) + 1;
+      });
+
+      /* ── Todos os eventos reais (para verificar sobreposição no fallback) ── */
+      // Exclui eventos all-day e o próprio "AGENDAR REUNIÃO AQUI"
+      const eventosReais = todos
+        .filter(e => e.start.dateTime) // só eventos com hora definida
+        .filter(e => (e.summary || '').trim().toUpperCase() !== SLOT_LIVRE_TITULO.toUpperCase())
+        .map(e => ({
+          id:    e.id,
+          title: e.summary || '',
+          inicio: new Date(e.start.dateTime),
+          fim:    new Date(e.end.dateTime),
+        }));
+
+      agendaCache[pessoa] = { slots, porHora, porDia, eventosReais, ok: true };
+    } catch(e) {
+      agendaCache[pessoa] = {
+        slots: [], porHora: new Map(), porDia: {}, eventosReais: [], ok: false, erro: e.message,
+      };
+      console.warn('Erro ao carregar agenda de ' + pessoa + ':', e.message);
     }
-  } catch(e) {
-    console.warn('Erro ao buscar disponibilidade:', e.message);
   }
 
-  agendaCacheLoaded = true;
+  agendaCache.fetchedAt = Date.now();
   if (loadingEl) loadingEl.style.display = 'none';
-  const step3 = document.getElementById('step3');
-  if (step3 && step3.classList.contains('active')) {
+  if (document.getElementById('step3') && document.getElementById('step3').classList.contains('active')) {
     renderWeek();
   }
 }
 
-// Verifica se pessoa tem slot livre nessa data+hora
-// Usa o cache buscado do Apps Script
+/* ══════════════════════════════════════════════════
+   VERIFICA DISPONIBILIDADE DO SLOT
+   Nível 1 — "AGENDAR REUNIÃO AQUI" (prioridade máxima)
+   Nível 2 — Fallback: hora livre na agenda real (sem sobreposição 1h30)
+══════════════════════════════════════════════════ */
 function pessoaTemSlot(pessoa, dt, h) {
-  if (!agendaCacheLoaded) return true; // ainda carregando → otimista
+  const cal = agendaCache[pessoa];
 
-  const slots = agendaCache[pessoa];
-  if (!slots || !Array.isArray(slots)) return true; // sem dados → otimista
+  // ── Sem conexão ao Google Calendar ainda → otimista: mostra tudo ──
+  // (após conectar, a agenda real substitui e bloqueia os ocupados)
+  if (!cal) return true;
 
-  // Usa data local (não UTC) para comparar com o Apps Script (fuso SP)
-  const pad = n => ('0'+n).slice(-2);
-  const dateStr = dt.getFullYear() + '-' + pad(dt.getMonth()+1) + '-' + pad(dt.getDate());
-  return slots.some(s => s.date === dateStr && s.hora === h);
+  const [hh, mm] = h.split(':').map(Number);
+  const inicio = new Date(dt);
+  inicio.setHours(hh, mm || 0, 0, 0);
+  const hrKey = inicio.toISOString().slice(0, 13);
+
+  // ── Nível 1: existe "AGENDAR REUNIÃO AQUI" nessa hora? → mostra ──
+  if (cal.porHora && cal.porHora.has(hrKey)) return true;
+
+  // ── Falha na conexão → otimista também ──
+  if (!cal.ok) return true;
+
+  // ── Nível 2 (fallback de agenda livre):
+  //    Se o dia tem slots "AGENDAR REUNIÃO AQUI", usa SÓ eles.
+  //    Se o dia não tem nenhum, verifica horário livre (sem sobreposição). ──
+  const dayKey = inicio.toISOString().slice(0, 10);
+  const diaTemSlotExplicito = cal.porDia && (cal.porDia[dayKey] || 0) > 0;
+  if (diaTemSlotExplicito) return false; // dia tem slots explícitos → só eles aparecem
+
+  // Slot de 15:30 não pode ultrapassar 17:00
+  const duracao = (CONFIG.duracao_min || 90) * 60 * 1000;
+  const fim = new Date(inicio.getTime() + duracao);
+  const limite = new Date(dt); limite.setHours(17, 0, 0, 0);
+  if (fim > limite) return false;
+
+  // Verifica sobreposição com eventos reais da agenda
+  const temConflito = (cal.eventosReais || []).some(ev => {
+    return !(ev.fim <= inicio || ev.inicio >= fim);
+  });
+
+  return !temConflito;
 }
 
-// Retorna objeto do slot (para compatibilidade — sem eventoId no novo fluxo)
+// pessoaTemSlot: definida acima em carregarAgendasReais com fallback de agenda livre
+
+/* Retorna o objeto do slot "AGENDAR REUNIÃO AQUI" (com ID para PATCH).
+   No modo fallback (hora livre), retorna null — o PATCH não terá ID de evento
+   e reservarSlotNoCalendario criará um evento novo nesse caso. */
 function getSlotEvento(pessoa, dt, h) {
-  return null; // não usamos mais PATCH — Apps Script cria evento novo
+  const cal = agendaCache[pessoa];
+  if (!cal || !cal.porHora) return null;
+  const [hh, mm] = h.split(':');
+  const d = new Date(dt);
+  d.setHours(parseInt(hh), parseInt(mm||0), 0, 0);
+  const hrKey = d.toISOString().slice(0, 13);
+  return cal.porHora.get(hrKey) || null; // null no fallback = cria novo evento
 }
 
-// Verificação de "atolado": Eduardo tem poucos slots nos próximos 2 dias úteis
+/* Verificação de "atolado" usando contagem de slots disponíveis (menos slots = mais ocupado) */
 function checarAtolado(pessoa) {
-  const slots = agendaCache[pessoa];
-  if (!slots || !Array.isArray(slots)) return false;
+  const cal = agendaCache[pessoa];
+  if (!cal || !cal.slots) return false;
+  // Eduardo é considerado "atolado" se tiver MENOS de N slots nos próximos X dias úteis
+  // (pouco espaço na agenda → redireciona para Marcelo)
   const hoje = new Date(); hoje.setHours(0,0,0,0);
-  let count = 0;
-  let diasUteis = 0;
-  for (let i = 1; diasUteis < CONFIG.dias_verificar_atolado * 2 && i < 30; i++) {
+  let slotsNaJanela = 0;
+  for (let i = 1; i <= CONFIG.dias_verificar_atolado * 2; i++) {
     const d = new Date(hoje); d.setDate(hoje.getDate() + i);
-    const dow = d.getDay();
-    if (dow === 0 || dow === 6) continue;
-    diasUteis++;
-    const key = d.toISOString().slice(0, 10);
-    count += slots.filter(s => s.date === key).length;
+    if (d.getDay() === 0 || d.getDay() === 6) continue;
+    const key = d.toISOString().slice(0,10);
+    slotsNaJanela += cal.porDia[key] || 0;
   }
-  return count < CONFIG.atolado_min_reunioes;
+  return slotsNaJanela < CONFIG.atolado_min_reunioes;
 }
 
-// Verificação de slots do Marcelo (PAV backup)
 function checarSlotMarcelo() {
-  const slots = agendaCache.marcelo;
-  if (!slots || !Array.isArray(slots)) return true;
+  const cal = agendaCache.marcelo;
+  if (!cal || !cal.slots) return true; // sem dados → assume disponível
   const hoje = new Date(); hoje.setHours(0,0,0,0);
   let total = 0;
   for (let i = 1; i <= CONFIG.janela_dias; i++) {
     const d = new Date(hoje); d.setDate(hoje.getDate() + i);
-    const key = d.toISOString().slice(0, 10);
-    total += slots.filter(s => s.date === key).length;
+    total += cal.porDia[d.toISOString().slice(0,10)] || 0;
   }
   return total < CONFIG.marcelo_max_pav_slots;
 }
 
-// Stub de compatibilidade (OAuth removido)
-function conectarGoogleCalendar() {}
-function initGoogleAuth() {}
+/* Reserva o slot no Google Calendar.
+   Se slot.id existir (evento "AGENDAR REUNIÃO AQUI") → PATCH (atualiza o evento)
+   Se slot.id for null (fallback de hora livre)        → POST  (cria evento novo) */
+async function reservarSlotNoCalendario(pessoa, slot) {
+  if (!gcalToken) return null;
+  const email = CONFIG.calendars[pessoa];
+  if (!email) return null;
+
+  const inicio = slot && slot.iso ? new Date(slot.iso) : null;
+  if (!inicio || isNaN(inicio)) return null;
+  const fim = new Date(inicio.getTime() + (CONFIG.duracao_min || 90) * 60 * 1000);
+
+  const body = {
+    summary:     'Consultoria GFB — ' + (leadData.nome || 'Lead'),
+    description: (typeof gerarRelatorioTexto === 'function') ? gerarRelatorioTexto() : '',
+    start:       { dateTime: inicio.toISOString() },
+    end:         { dateTime: fim.toISOString() },
+    attendees:   leadData.email ? [{ email: leadData.email }] : [],
+    conferenceData: { createRequest: { requestId: 'gfb-' + Date.now() } },
+  };
+
+  try {
+    let url, method;
+    if (slot && slot.id) {
+      // ── PATCH: atualiza o "AGENDAR REUNIÃO AQUI" existente ──
+      url    = 'https://www.googleapis.com/calendar/v3/calendars/'
+               + encodeURIComponent(email) + '/events/' + encodeURIComponent(slot.id)
+               + '?conferenceDataVersion=1&sendUpdates=all';
+      method = 'PATCH';
+    } else {
+      // ── POST: cria evento novo no slot livre (fallback) ──
+      url    = 'https://www.googleapis.com/calendar/v3/calendars/'
+               + encodeURIComponent(email) + '/events'
+               + '?conferenceDataVersion=1&sendUpdates=all';
+      method = 'POST';
+    }
+
+    const r = await fetch(url, {
+      method,
+      headers: {
+        'Authorization': 'Bearer ' + gcalToken,
+        'Content-Type':  'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  } catch(e) {
+    console.warn('Erro ao reservar slot no Google Calendar:', e);
+    return null;
+  }
+}
+
+/* Compatibilidade — mantemos criarEventoGoogleCalendar apontando para reservarSlot */
+async function criarEventoGoogleCalendar(pessoa, slot) {
+  const slotEvento = slot.eventoId ? { id: slot.eventoId } : getSlotEvento(pessoa, new Date(slot.iso), new Date(slot.iso).toTimeString().slice(0,5));
+  return reservarSlotNoCalendario(pessoa, slotEvento);
+}
 
 /* ══════════════════════════════════════════════════
    BOOKING VIA GOOGLE APPS SCRIPT
@@ -1996,9 +2140,14 @@ function buildCalendar() {
   slotSel    = null;
   renderResponsavelInfo();
   renderWeek();
-  // Busca disponibilidade real via Apps Script (sem OAuth)
-  if (!agendaCacheLoaded) {
-    carregarAgendasReais(); // async — quando terminar, chama renderWeek()
+  // Tenta usar token já existente; senão, pede conexão (1x por sessão)
+  if (CONFIG.google_client_id && CONFIG.google_client_id.indexOf('COLE_SEU') === -1) {
+    initGoogleAuth();
+    if (gcalToken) {
+      carregarAgendasReais();
+    } else {
+      renderConectarAgendaBtn();
+    }
   }
 }
 
@@ -2182,9 +2331,7 @@ function renderWeek() {
       }
       lastPeriod = period;
 
-      const pad2 = n => ('0'+n).slice(-2);
-      const localDate = dt.getFullYear() + '-' + pad2(dt.getMonth()+1) + '-' + pad2(dt.getDate());
-      const iso   = localDate + 'T' + h + ':00';
+      const iso   = dt.toISOString().slice(0,10) + 'T' + h + ':00';
       const label = dt.toLocaleDateString('pt-BR', {weekday:'long', day:'2-digit', month:'long'}) + ' às ' + h + ' (1h30)';
       const btn   = document.createElement('button');
 
