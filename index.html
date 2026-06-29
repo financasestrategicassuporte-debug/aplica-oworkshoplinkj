@@ -1201,11 +1201,15 @@ body{
 ══════════════════════════════════════════════════ */
 const CONFIG = {
   // ── RD Station CRM ──
-  rd_token:                "COLE_SEU_TOKEN_RD_STATION",
-  rd_pipeline_id:          "COLE_O_ID_DO_PIPELINE_WEBINARIO_QUENTE",
-  rd_stage_qualificado:    "COLE_ID_ESTAGIO_REUNIAO_AGENDADA",
-  rd_stage_treino:         "COLE_ID_ESTAGIO_PARA_QUALIFICAR",
-  rd_stage_desqualificado: "COLE_ID_ESTAGIO_NAO_QUALIFICADO",
+  rd_token:                "6a0006cde22509001320dd04",
+  rd_account_id:           "aceleradora-de-academias",
+  // Nomes usados para descobrir os IDs automaticamente via API
+  rd_pipeline_nome:        "Funil Leads Frios",   // busca pipeline com esse texto
+  rd_stage_reuniao_nome:   "Reunião agendada",     // stage dos qualificados
+  // IDs preenchidos dinamicamente em rdCarregarIds()
+  rd_pipeline_id:          "",
+  rd_stage_reuniao_id:     "",
+  rd_stage_entrada_id:     "",
 
   // ── Supabase (todos os leads, qualificados ou não) ──
   // Crie um projeto em supabase.com (free tier serve), copie a URL e a anon key
@@ -1676,6 +1680,7 @@ function calcResults(qa) {
     "100to500k":{acel:0, pav:1, bb:3},
   };
   const fv = fatMap[fat]; if(fv){ s.acel+=fv.acel; s.pav+=fv.pav; s.bb+=fv.bb; if(fv.tr)training=true; }
+  let disqualifiedReason = '';
 
   /* ── 2. MARGEM ────────────────────────────────────────────
      Saúde financeira → viabilidade de investir.
@@ -1693,7 +1698,9 @@ function calcResults(qa) {
     lt10: 'lt10', "10to20": '10to20', "20to30": '20to30',
     "30to40": 'gt30', gt40: 'gt30',
   }[qa.margem] || null;
-  const mv = marMap[marKey]; if(mv){ s.acel+=mv.acel; s.pav+=mv.pav; s.bb+=mv.bb; if(mv.dq)disqualified=true; if(mv.tr)training=true; }
+  const mv = marMap[marKey]; if(mv){ s.acel+=mv.acel; s.pav+=mv.pav; s.bb+=mv.bb;
+    if(mv.dq){ disqualified=true; disqualifiedReason='Margem de lucro negativa — negócio inviável para investir'; }
+    if(mv.tr)training=true; }
 
   /* ── 3. FLUXO DE CAIXA ────────────────────────────────────
      Derivado de: situacao → fluxo → reserva
@@ -1716,7 +1723,8 @@ function calcResults(qa) {
     }
     return null;
   })();
-  const fxv = flxMap[flxKey]; if(fxv){ s.acel+=fxv.acel; s.pav+=fxv.pav; s.bb+=fxv.bb; if(fxv.dq)disqualified=true; }
+  const fxv = flxMap[flxKey]; if(fxv){ s.acel+=fxv.acel; s.pav+=fxv.pav; s.bb+=fxv.bb;
+    if(fxv.dq){ disqualified=true; disqualifiedReason = disqualifiedReason || 'Fluxo de caixa negativo e sem reservas — sem capacidade de investimento'; } }
 
   /* ── 4. ESTRUTURA COMERCIAL ───────────────────────────────
      Infere do PERFIL selecionado no formulário premium.
@@ -2622,10 +2630,16 @@ async function enviarWebhook() {
   }
 
   // Daqui pra baixo só roda se o lead foi QUALIFICADO e tem horário marcado
+  // ── 2. RD STATION CRM — roda para TODOS (qualificados e desqualificados) ──
+  if (CONFIG.rd_token) {
+    try { await rdLancarLead(result, resp, relatorio); }
+    catch(e) { console.warn('RD Station error:', e); }
+  }
+
   const qualificado = !result.disqualified && result.rec !== 'REUNIÃO DE TREINO';
   if (!qualificado) return payload;
 
-  // ── 2. AGENDAMENTO — N8N primário + Google Calendar direto como fallback ──
+  // ── 3. AGENDAMENTO — Google Calendar via Apps Script (só qualificados) ──
   if (slotSel) {
     const pessoaFinal = slotSel.pessoa || resp.pessoa;
 
@@ -2647,54 +2661,8 @@ async function enviarWebhook() {
     }
   }
 
-  // ── 3. RD STATION — cria negócio no funil "Webinário Quente",
-  //     move para "Reunião agendada", adiciona hora + relatório na descrição ──
-  if (CONFIG.rd_token && CONFIG.rd_token !== 'COLE_SEU_TOKEN_RD_STATION') {
-    try {
-      const nomes = { marcelo: 'Marcelo', eduardo: 'Eduardo Lustosa', yves: 'Yves' };
 
-      const descricao =
-        '📅 Reunião agendada: ' + (slotSel ? slotSel.label : '—') + '\
-' +
-        '🧑‍💼 Responsável: ' + (nomes[resp.pessoa] || resp.pessoa) + '\
-\
-' +
-        relatorio;
-
-      const rdBody = {
-        deal: {
-          name:        leadData.nome + ' — ' + (result.rec || 'Lead'),
-          pipeline_id: CONFIG.rd_pipeline_id,                 // funil "Webinário Quente"
-          stage_id:    result.rdStageId || CONFIG.rd_stage_qualificado, // "Reunião agendada"
-          deal_custom_fields: [],
-        },
-        contact: {
-          name:  leadData.nome,
-          email: leadData.email,
-          mobile_phone: leadData.whatsapp,
-        },
-      };
-
-      const rdResp = await fetch('https://crm.rdstation.com/api/1.0/deals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': CONFIG.rd_token },
-        body: JSON.stringify(rdBody),
-      });
-      const rdData = await rdResp.json().catch(() => null);
-      const dealId = rdData && (rdData._id || rdData.id);
-
-      // Anota a descrição (hora + relatório) como nota/anotação do negócio
-      if (dealId) {
-        try {
-          await fetch('https://crm.rdstation.com/api/1.0/deals/' + dealId + '/notes?token=' + CONFIG.rd_token, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: descricao }),
-          });
-        } catch(e) { console.warn('RD Station note error:', e); }
-      }
-    } catch(e) { console.warn('RD Station error:', e); }
-  }
+  // RD Station já foi chamado acima (antes do qualificado check)
 
   return payload;
 }
@@ -2731,6 +2699,180 @@ async function enviarWebhook() {
      with check (true);
 
 ══════════════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════
+   RD STATION CRM — INTEGRAÇÃO COMPLETA
+   ─────────────────────────────────────────────────
+   FLUXO:
+   ✅ Qualificados (PAV/BB/Acelerador com reunião):
+      → Cria negócio em "Funil Leads Frios"
+      → Move para stage "Reunião agendada"
+      → Cria tarefa de reunião (tipo meeting) com data/hora
+      → Adiciona nota com resumo da qualificação
+
+   ❌ Desqualificados:
+      → Cria negócio em "Funil Leads Frios"
+      → Marca como PERDIDO imediatamente
+      → Adiciona nota com motivo + resumo
+
+   🔍 IDs de pipeline/stage são descobertos automaticamente
+      pelo nome (sem precisar hardcodar)
+══════════════════════════════════════════════════ */
+
+let rdIdsCache = null; // { pipeline_id, stage_reuniao_id, stage_entrada_id }
+
+const RD_BASE = 'https://crm.rdstation.com/api/1.0';
+const rdTk   = () => '?token=' + CONFIG.rd_token;
+
+async function rdFetch(path, method, body) {
+  const r = await fetch(RD_BASE + path + rdTk(), {
+    method:  method || 'GET',
+    headers: { 'Content-Type': 'application/json' },
+    body:    body ? JSON.stringify(body) : undefined,
+  });
+  if (!r.ok) {
+    const err = await r.text().catch(() => r.status);
+    throw new Error('RD ' + path + ' → ' + r.status + ': ' + err);
+  }
+  return r.json().catch(() => ({}));
+}
+
+/* Descobre pipeline_id e stage_ids pelo nome (roda 1x, depois usa cache) */
+async function rdCarregarIds() {
+  if (rdIdsCache) return rdIdsCache;
+
+  const pipelines = await rdFetch('/deals/pipelines');
+  const lista = Array.isArray(pipelines) ? pipelines
+               : (pipelines.pipelines || pipelines.deals_pipelines || []);
+
+  // Encontra o pipeline cujo nome contém CONFIG.rd_pipeline_nome
+  const nomeBusca = (CONFIG.rd_pipeline_nome || 'Funil Leads Frios').toLowerCase();
+  const pipeline  = lista.find(p => (p.name||'').toLowerCase().includes(nomeBusca))
+                 || lista[0]; // fallback: primeiro pipeline
+
+  if (!pipeline) throw new Error('Pipeline "' + nomeBusca + '" não encontrado no RD Station.');
+
+  const stages = pipeline.deal_stages || pipeline.stages || [];
+
+  // Stage de reunião
+  const nomeReuniao = (CONFIG.rd_stage_reuniao_nome || 'Reunião agendada').toLowerCase();
+  const stageReuniao = stages.find(s => (s.name||'').toLowerCase().includes(nomeReuniao))
+                    || stages[stages.length - 1]; // fallback: último stage
+
+  // Stage de entrada = primeiro do funil
+  const stageEntrada = stages[0];
+
+  rdIdsCache = {
+    pipeline_id:      pipeline._id || pipeline.id,
+    stage_reuniao_id: stageReuniao  ? (stageReuniao._id  || stageReuniao.id)  : null,
+    stage_entrada_id: stageEntrada  ? (stageEntrada._id  || stageEntrada.id)  : null,
+    pipeline_nome:    pipeline.name,
+    stages_nomes:     stages.map(s => s.name),
+  };
+  console.log('RD IDs carregados:', rdIdsCache);
+  return rdIdsCache;
+}
+
+/* Cria o negócio no CRM */
+async function rdCriarNegocio(ids, nome, rec) {
+  const body = {
+    deal: {
+      name:        nome + ' — ' + (rec || 'Lead'),
+      pipeline_id: ids.pipeline_id,
+      stage_id:    ids.stage_entrada_id, // entra no primeiro stage
+    },
+    contacts: [{
+      name:   leadData.nome || nome,
+      emails: leadData.email  ? [{ email: leadData.email }]              : [],
+      phones: leadData.whatsapp ? [{ phone: leadData.whatsapp, type: 'cellphone' }] : [],
+    }],
+  };
+  const r = await rdFetch('/deals', 'POST', body);
+  return r._id || r.id || (r.deal && (r.deal._id || r.deal.id));
+}
+
+/* Move o negócio para o stage de reunião agendada */
+async function rdMoverStage(dealId, stageId) {
+  if (!stageId) return;
+  await rdFetch('/deals/' + dealId, 'PUT', {
+    deal: { stage_id: stageId },
+  });
+}
+
+/* Cria tarefa de reunião com data/hora */
+async function rdCriarTarefa(dealId, label) {
+  if (!slotSel || !slotSel.iso) return;
+  const dueDate = new Date(slotSel.iso).toISOString();
+  await rdFetch('/tasks', 'POST', {
+    task: {
+      deal_id:  dealId,
+      subject:  'Reunião GFB — ' + (leadData.nome || ''),
+      type:     'meeting',
+      due_date: dueDate,
+    },
+  });
+}
+
+/* Adiciona nota ao negócio */
+async function rdAdicionarNota(dealId, texto) {
+  await rdFetch('/deals/' + dealId + '/notes', 'POST', { text: texto });
+}
+
+/* Marca negócio como perdido */
+async function rdMarcarPerdido(dealId, motivo) {
+  await rdFetch('/deals/' + dealId + '/lose', 'POST', {
+    deal: { reason: motivo || 'Lead desqualificado pelo formulário' },
+  });
+}
+
+/* ── FUNÇÃO PRINCIPAL ── */
+async function rdLancarLead(result, resp, relatorio) {
+  if (!CONFIG.rd_token) return;
+
+  const ids        = await rdCarregarIds();
+  const nome       = leadData.nome || 'Lead sem nome';
+  const rec        = result.rec  || '';
+  const isDesq     = result.disqualified;
+  const nomes      = { marcelo: 'Marcelo', eduardo: 'Eduardo Lustosa', yves: 'Yves' };
+  const consultor  = nomes[resp.pessoa] || resp.pessoa || '';
+
+  // ── Nota padrão (qualificação resumida) ──
+  const notaBase = [
+    '📋 DIAGNÓSTICO: ' + rec,
+    '👤 Consultor: ' + consultor,
+    slotSel ? '📅 Horário: ' + slotSel.label : '',
+    '',
+    '── PONTUAÇÃO ──',
+    'Acelerador: ' + (result.probs?.acel || 0) + '%',
+    'PAV:        ' + (result.probs?.pav  || 0) + '%',
+    'Black Belt: ' + (result.probs?.bb   || 0) + '%',
+    '',
+    '── QUALIFICAÇÃO ──',
+    relatorio,
+  ].filter(Boolean).join('\n');
+
+  // Cria o negócio
+  const dealId = await rdCriarNegocio(ids, nome, rec);
+  if (!dealId) throw new Error('Negócio não foi criado no RD Station');
+
+  if (isDesq) {
+    // ── DESQUALIFICADO: marca como perdido + nota com motivo ──
+    const motivo = result.disqualifiedReason || 'Lead fora do perfil GFB';
+    await rdMarcarPerdido(dealId, motivo);
+    await rdAdicionarNota(dealId,
+      '❌ DESQUALIFICADO\n' +
+      'Motivo: ' + motivo + '\n\n' + notaBase
+    );
+  } else {
+    // ── QUALIFICADO: move para "Reunião agendada", cria tarefa e nota ──
+    await rdMoverStage(dealId, ids.stage_reuniao_id);
+    await rdCriarTarefa(dealId, slotSel?.label);
+    await rdAdicionarNota(dealId, notaBase);
+  }
+
+  console.log('RD Station: negócio lançado com sucesso. ID:', dealId);
+  return dealId;
+}
+
 </script>
 </body>
 </html>
