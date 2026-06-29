@@ -1614,23 +1614,33 @@ async function agendarViaAppsScript(pessoa, slotIso, slotLabel) {
   const inicio = new Date(slotIso);
   const fim    = new Date(inicio.getTime() + (CONFIG.duracao_min || 90) * 60 * 1000);
 
+  const result2  = leadData.result || {};
+  const isDesq   = result2.disqualified === true;
   const payload = {
+    // ── Lead ──
     nome:            leadData.nome     || '',
     email:           leadData.email    || '',
     whatsapp:        leadData.whatsapp || leadData.telefone || '',
     academia:        leadData.academia || '',
+    // ── Slot ──
     slot_inicio:     inicio.toISOString(),
     slot_fim:        fim.toISOString(),
     slot_label:      slotLabel,
+    // ── Consultor ──
     consultor:       pessoa,
     consultor_email: CONFIG.calendars[pessoa] || '',
     consultor_nome:  { marcelo: 'Marcelo', eduardo: 'Eduardo Lustosa', yves: 'Yves' }[pessoa] || pessoa,
-    diagnostico:     result.rec   || '',
-    prob_acel:       result.probs?.acel || 0,
-    prob_pav:        result.probs?.pav  || 0,
-    prob_bb:         result.probs?.bb   || 0,
-    relatorio:       (typeof gerarRelatorioTexto === 'function') ? gerarRelatorioTexto() : '',
-    timestamp:       new Date().toISOString(),
+    // ── Diagnóstico ──
+    diagnostico:       result2.rec   || '',
+    prob_acel:         result2.probs?.acel || 0,
+    prob_pav:          result2.probs?.pav  || 0,
+    prob_bb:           result2.probs?.bb   || 0,
+    // ── RD Station ──
+    is_desqualificado: isDesq,
+    motivo_desq:       result2.disqualifiedReason || 'Lead fora do perfil GFB',
+    // ── Relatório ──
+    relatorio:         (typeof gerarRelatorioTexto === 'function') ? gerarRelatorioTexto() : '',
+    timestamp:         new Date().toISOString(),
   };
 
   try {
@@ -2630,14 +2640,33 @@ async function enviarWebhook() {
   }
 
   // Daqui pra baixo só roda se o lead foi QUALIFICADO e tem horário marcado
-  // ── 2. RD STATION CRM — roda para TODOS (qualificados e desqualificados) ──
-  if (CONFIG.rd_token) {
-    try { await rdLancarLead(result, resp, relatorio); }
-    catch(e) { console.warn('RD Station error:', e); }
-  }
+  // RD Station → processado pelo Apps Script (server-side, sem CORS)
 
   const qualificado = !result.disqualified && result.rec !== 'REUNIÃO DE TREINO';
-  if (!qualificado) return payload;
+
+  // Desqualificados e treinos → Apps Script só para RD Station (sem calendário)
+  if (!qualificado) {
+    try {
+      const url = CONFIG.apps_script_url;
+      if (url && !url.includes('COLE_URL')) {
+        const dsPayload = {
+          nome: leadData.nome || '', email: leadData.email || '',
+          whatsapp: leadData.whatsapp || '', academia: leadData.academia || '',
+          diagnostico: result.rec || 'DESQUALIFICADO',
+          is_desqualificado: result.disqualified === true,
+          motivo_desq: result.disqualifiedReason || 'Lead fora do perfil GFB',
+          prob_acel: result.probs?.acel||0, prob_pav: result.probs?.pav||0, prob_bb: result.probs?.bb||0,
+          relatorio: relatorio,
+          // Sem slot (não tem agendamento)
+          slot_inicio: '', slot_fim: '', slot_label: '',
+          consultor: resp.pessoa, consultor_email: '', consultor_nome: '',
+          timestamp: new Date().toISOString(),
+        };
+        await fetch(url, { method:'POST', headers:{'Content-Type':'text/plain'}, body: JSON.stringify(dsPayload) });
+      }
+    } catch(e) { console.warn('Apps Script (desq) error:', e); }
+    return payload;
+  }
 
   // ── 3. AGENDAMENTO — Google Calendar via Apps Script (só qualificados) ──
   if (slotSel) {
